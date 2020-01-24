@@ -1,0 +1,8 @@
+iocontrol KEYWORD1
+readBool KEYWORD2
+readInt KEYWORD2
+readFloat KEYWORD2
+readString KEYWORD2
+readCstring KEYWORD2
+readAll KEYWORD2
+setKey KEYWORD2
