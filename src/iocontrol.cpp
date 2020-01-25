@@ -1,9 +1,11 @@
 #include "iocontrol.h"
 //tabstop=8
 //#define __DEBUG__
+
 //TODO: discard header by '{'?
-//TODO: fix memmory leak on _boardVars[i]._string; figure out "delete"
-//TODO: mac address
+//TODO: changable mac address
+//TODO: replace readAll() with update() or schedule()
+
 #define jsonBufSiz 150
 
 // errors
@@ -22,30 +24,26 @@ enum {
 };
 
 char headerEnd[] = "\r\n\r\n";
-IPAddress _server(188,124,36,57);
-byte mac[6] = {
+//IPAddress _server(188,124,36,57);
+byte _mac[6] = {
 	0xFE, 0xED, 0xDE, 0xAD, 0xBE, 0xEF
 };
 
 iocontrol::iocontrol(const char* boardName)
 {
 	_boardName = boardName;
-#ifdef __DEBUG__
-	_boardVars = new t_item[10];
-	char* var = "myVar";
-	_boardVars[0].name = (char*)malloc(sizeof(var));
-	_boardVars[0].name = var;
-	_boardvars[0]._int = 42;
-	//char* var2 = "my2ndVar";
-	//_panel_vars[1].name = (char*)malloc(sizeof(var2));
-	_boardVars[1].name = "my2ndVar";
-	//_panel_vars[1].name = var2;
-#endif
+	//_mac[6] = {0xFE, 0xED, 0xDE, 0xAD, 0xBE, 0xEF};
 }
+
+/*iocontrol::iocontrol(const char* boardName, byte mac[6])
+{
+	_boardName = boardName;
+	_mac = &mac[0];
+}*/
 
 int iocontrol::begin()
 {
-	if (!Ethernet.begin(mac)) {
+	if (!Ethernet.begin(_mac)) {
 		if (Ethernet.hardwareStatus() == EthernetNoHardware)
 			return noEthHardware;
 		else if (Ethernet.linkStatus() == LinkOFF)
@@ -58,9 +56,10 @@ int iocontrol::begin()
 	return readAll();
 }
 
+//TODO: replace with schedule() or update() that reads and checks for pending writes.
 int iocontrol::readAll()
 {
-	if (millis() - currentMillis > _interval || !_created) {
+	if (millis() - currentMillis > _intervalR || !_created) {
 		if (!_httpRequest()) {
 			return connectionFailed;
 		}
@@ -96,6 +95,8 @@ int iocontrol::readAll()
 		String s = "{" + _client.readStringUntil('[');
 		s.concat("\"\"}");
 
+		// parse if responese was succsessful
+		// get boardSize
 		bool check;
 		int jsonError = _parseJson(check, s, "check");
 
@@ -113,6 +114,9 @@ int iocontrol::readAll()
 			//Serial.println(_boardSize);
 		}
 
+
+		//create structure if valid board size
+
 		if (_boardSize == 0) {
 			return emptyBoard;
 		}
@@ -125,7 +129,28 @@ int iocontrol::readAll()
 #endif
 		}
 
-                ///////
+		//fill intervals
+
+		if (!_intervalSet) {
+			int tmp;
+			int i = 0;
+			jsonError = _parseJson(tmp, s, "timeR");
+			if (tmp > 0) {
+				_intervalR = 1000 * tmp;
+				i++;
+				//Serial.println(_intervalR);
+			}
+			_parseJson(tmp, s, "timeW");
+			if (tmp > 0) {
+				_intervalW = 1000 * tmp;
+				i++;
+			}
+
+			if (i == 2)
+				_intervalSet = true;
+		}
+
+		//fill structure
 		int i;
 		for (_currentPlace = _boardSize, i = 0;
 				_currentPlace > 0;
@@ -142,13 +167,6 @@ int iocontrol::readAll()
 	}
 	_client.stop();
 	return 0;
-#ifdef __DEBUG__
-	Serial.println(int(_panel_vars[0]._int));
-	Serial.println(_panel_vars[1].name);
-	Serial.println(_server);
-	//std::cout << int(_panel_vars[0]._int) << '\n';
-		//std::cout << _panel_vars[1].name << '\n';
-#endif
 }
 else
 	return intervalError;
@@ -186,11 +204,6 @@ char* iocontrol::readCstring(String name)
 
 String iocontrol::readString(String name)
 {
-////////for (int i = 0; i < _boardSize; i++) {
-////////	if (_boardVars[i].name == name)
-////////		if (_boardVars[i].v_type == is_string)
-////////			return String(_boardVars[i]._string);
-////////}
 	return String(readCstring(name));
 }
 
@@ -214,9 +227,9 @@ bool iocontrol::_discardHeader()
 int iocontrol::_httpStatus()
 {
 	String status = _client.readStringUntil('\n');
-	//
-	//Serial.println(status);
-	//
+#ifdef __DEBUG__
+	Serial.println(status);
+#endif
 	status = status.substring(9,13);
 	return status.toInt();
 }
@@ -286,9 +299,7 @@ int iocontrol::_parseJson(String& ioString, String& json, String field)
 	if (error)
 		return error;
 
-	//Serial.println(sizeof(root[field]));
 	char* tmp = root[field];
-	//Serial.println(sizeof(tmp));
 	ioString = (String)tmp;
 
 	return 0;
@@ -313,9 +324,9 @@ JsonObject& iocontrol::_parseJsonRoot(String& json, int& error)
 
 	if (!root.success()) {
 		error =  failedJsonRoot;
-		//
+#ifdef __DEBUG__
 		Serial.println(json);
-		//
+#endif
 		return;
 	}
 
@@ -325,7 +336,6 @@ JsonObject& iocontrol::_parseJsonRoot(String& json, int& error)
 int iocontrol::_fillData(int& i)
 {
 
-	//Serial.println(i);
 	String s = _client.readStringUntil('}');
 	s.concat("}");
 
@@ -342,18 +352,18 @@ int iocontrol::_fillData(int& i)
 		jsonError = _parseJson(_boardVars[i]._int, s, "value");
 	}
 	else if (type == "float") {
-		//
+
 		_boardVars[i].v_type = is_float;
 		jsonError = _parseJson(_boardVars[i]._float, s, "value");
 	}
 	else if (type == "string") {
-		;
-		//
-//      	_boardVars[i].v_type = is_string;
-//              String tmp = "";
-//      	jsonError = _parseJson(tmp, s, "type");
-//              _boardVars[i]._string = new char[tmp.length() + 1];
-//              tmp.toCharArray(_boardVars[i]._string, tmp.length() + 1);
+
+		_boardVars[i].v_type = is_string;
+		String tmp = "";
+		jsonError = _parseJson(tmp, s, "value");
+		delete[] _boardVars[i]._string;
+		_boardVars[i]._string = new char[tmp.length() + 1];
+		tmp.toCharArray(_boardVars[i]._string, tmp.length() + 1);
 	}
 	else
 		return noType;
@@ -432,6 +442,17 @@ void iocontrol::_rest()
 	_client.println();
 
 }
+
+/*int iocontrol::_send()
+{
+	for (uint8_t i = 0; i < _boardSize; i++) {
+		if (_boardVars[i]._pending) {
+			//TODO;
+		}
+	}
+	return 0;
+
+}*/
 //template <> int iocontrol::write(String varName, int var);
 //int iocontrol::Write(String name, float var)
 //{

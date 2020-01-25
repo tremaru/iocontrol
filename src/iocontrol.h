@@ -11,6 +11,7 @@ class iocontrol{
 
 	public:
 		iocontrol(const char* boardName);
+		//iocontrol(const char* boardName, byte mac[6]);
 
 		// funcs
 		int begin();
@@ -60,10 +61,12 @@ class iocontrol{
 
 		// vars
 		long currentMillis;
-		const unsigned long _interval = 5000;
+		uint16_t _intervalR = 5000;
+		uint16_t _intervalW = 3000;
 		struct t_item {
 			String name;
 			type v_type;
+			bool _pending = false;
 			union {
 				long _int;
 				float _float;
@@ -77,8 +80,11 @@ class iocontrol{
 		int _boardSize = 0;
 		int _currentPlace;
 		bool _created = false;
+		bool _intervalSet = false;
+		//bool _pending = false;
+		//uint8_t _mac[6];
 
-		//const char* _server = "www.iocontrol.ru";
+		const char* _server = "www.iocontrol.ru";
 		//IPAddress _server();
 		//
 		EthernetClient _client;
