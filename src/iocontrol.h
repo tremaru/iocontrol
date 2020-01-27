@@ -11,11 +11,14 @@ class iocontrol{
 
 	public:
 		iocontrol(const char* boardName);
-		iocontrol(const char* boardName, const uint8_t* mac);
+		iocontrol(const char* boardName, const char* key);
+		iocontrol(const char* boardName, uint8_t* mac);
+		iocontrol(const char* boardName, const char* key, uint8_t* mac);
 
 		// funcs
 		int begin();
-		int readAll();
+		int readUpdate();
+		int writeUpdate();
 
 		long readInt(const String& varName);
 		float readFloat(const String& varName);
@@ -25,18 +28,14 @@ class iocontrol{
 
 		//template <typename T> int write(String varName, T var);
 
-		int write(const String& varName, int var);
+		void write(const String& varName, int var);
 		int write(const String& varName, float var);
+		int write(const String& varName, float var, uint8_t prec);
 		int write(const String& varName, String var);
 		int write(const String& varName, bool var);
 
-		void setKey(String KEY)
-		{
-			key = KEY;
-		}
 		//vars
 
-		String key = "0";
 
 	private:
 
@@ -44,14 +43,15 @@ class iocontrol{
 		bool _httpRequest();
 		bool _discardHeader();
 		int _fillData(int& i);
-		int _parseJson(bool& ioBool, String& json, String field);
-		int _parseJson(int& ioInt, String& json, String field);
-		int _parseJson(long& ioInt, String& json, String field);
-		int _parseJson(float& ioFloat, String& json, String field);
-		int _parseJson(String& ioString, String& json, String field);
+		int _sendData(int& i);
+		int _parseJson(bool& ioBool, String& json, const String& field);
+		int _parseJson(int& ioInt, String& json, const String& field);
+		int _parseJson(long& ioInt, String& json, const String& field);
+		int _parseJson(float& ioFloat, String& json, const String& field);
+		int _parseJson(String& ioString, String& json, const String& field);
 		int _httpStatus();
 		void _rest();
-		JsonObject& _parseJsonRoot(String& json, int& error);
+		//JsonObject _parseJsonRoot(String& json, int& error);
 
 		enum type {
 			is_int,
@@ -80,15 +80,18 @@ class iocontrol{
 
 		t_item* _boardVars;
 		const char* _boardName;
+
 		int _boardSize = 0;
 		int _currentPlace;
 		bool _created = false;
 		bool _intervalSet = false;
-		const uint8_t* _mac;
+		bool _boardExists = true;
+		uint8_t* _mac;
 		//bool _pending = false;
 		//uint8_t _mac[6];
 
 		const char* _server = "www.iocontrol.ru";
+		const char* _key;
 		//IPAddress _server();
 		//
 		EthernetClient _client;
