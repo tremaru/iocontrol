@@ -24,22 +24,22 @@ enum {
 };
 
 char headerEnd[] = "\r\n\r\n";
-//IPAddress _server(188,124,36,57);
-byte _mac[6] = {
+const uint8_t _defaultMac[6] = {
 	0xFE, 0xED, 0xDE, 0xAD, 0xBE, 0xEF
 };
 
 iocontrol::iocontrol(const char* boardName)
+	: _mac(_defaultMac)
 {
 	_boardName = boardName;
 	//_mac[6] = {0xFE, 0xED, 0xDE, 0xAD, 0xBE, 0xEF};
 }
 
-/*iocontrol::iocontrol(const char* boardName, byte mac[6])
+iocontrol::iocontrol(const char* boardName, const uint8_t* mac)
+	: _mac(mac)
 {
 	_boardName = boardName;
-	_mac = &mac[0];
-}*/
+}
 
 int iocontrol::begin()
 {
@@ -172,7 +172,7 @@ else
 	return intervalError;
 }
 
-long iocontrol::readInt(String name)
+long iocontrol::readInt(const String& name)
 {
 	for (int i = 0; i < _boardSize; i++) {
 		if (_boardVars[i].name == name)
@@ -182,7 +182,7 @@ long iocontrol::readInt(String name)
 	return 0;
 }
 
-float iocontrol::readFloat(String name)
+float iocontrol::readFloat(const String& name)
 {
 	for (int i = 0; i < _boardSize; i++) {
 		if (_boardVars[i].name == name)
@@ -192,7 +192,7 @@ float iocontrol::readFloat(String name)
 	return 0;
 }
 
-char* iocontrol::readCstring(String name)
+char* iocontrol::readCstring(const String& name)
 {
 	for (int i = 0; i < _boardSize; i++) {
 		if (_boardVars[i].name == name)
@@ -202,7 +202,7 @@ char* iocontrol::readCstring(String name)
 	return;
 }
 
-String iocontrol::readString(String name)
+String iocontrol::readString(const String& name)
 {
 	return String(readCstring(name));
 }
@@ -361,7 +361,8 @@ int iocontrol::_fillData(int& i)
 		_boardVars[i].v_type = is_string;
 		String tmp = "";
 		jsonError = _parseJson(tmp, s, "value");
-		delete[] _boardVars[i]._string;
+		if (_boardVars[i]._string)
+			delete[] _boardVars[i]._string;
 		_boardVars[i]._string = new char[tmp.length() + 1];
 		tmp.toCharArray(_boardVars[i]._string, tmp.length() + 1);
 	}
@@ -377,7 +378,7 @@ int iocontrol::_fillData(int& i)
 }
 
 //template <typename T> int iocontrol::write(String varName, T var)
-int iocontrol::write(String varName, int var)
+int iocontrol::write(const String& varName, int var)
 {
 	if (!_httpRequest())
 		return connectionFailed;
@@ -392,7 +393,7 @@ int iocontrol::write(String varName, int var)
 	return 0;
 }
 
-int iocontrol::write(String varName, float var)
+int iocontrol::write(const String& varName, float var)
 {
 	if (!_httpRequest())
 		return connectionFailed;
@@ -406,7 +407,7 @@ int iocontrol::write(String varName, float var)
 	return 0;
 }
 
-int iocontrol::write(String varName, String var)
+int iocontrol::write(const String& varName, String var)
 {
 	if (!_httpRequest())
 		return connectionFailed;
@@ -420,7 +421,7 @@ int iocontrol::write(String varName, String var)
 	return 0;
 }
 
-int iocontrol::write(String varName, bool var)
+int iocontrol::write(const String& varName, bool var)
 {
 	if (!_httpRequest())
 		return connectionFailed;

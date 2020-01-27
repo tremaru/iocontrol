@@ -11,24 +11,24 @@ class iocontrol{
 
 	public:
 		iocontrol(const char* boardName);
-		//iocontrol(const char* boardName, byte mac[6]);
+		iocontrol(const char* boardName, const uint8_t* mac);
 
 		// funcs
 		int begin();
 		int readAll();
 
-		long readInt(String varName);
-		float readFloat(String varName);
-		char* readCstring(String varName);
-		String readString(String varName);
-		bool readBool(String varName);
+		long readInt(const String& varName);
+		float readFloat(const String& varName);
+		char* readCstring(const String& varName);
+		String readString(const String& varName);
+		bool readBool(const String& varName);
 
 		//template <typename T> int write(String varName, T var);
 
-		int write(String varName, int var);
-		int write(String varName, float var);
-		int write(String varName, String var);
-		int write(String varName, bool var);
+		int write(const String& varName, int var);
+		int write(const String& varName, float var);
+		int write(const String& varName, String var);
+		int write(const String& varName, bool var);
 
 		void setKey(String KEY)
 		{
@@ -64,6 +64,9 @@ class iocontrol{
 		uint16_t _intervalR = 5000;
 		uint16_t _intervalW = 3000;
 		struct t_item {
+			t_item() {
+				_string = 0;
+			}
 			String name;
 			type v_type;
 			bool _pending = false;
@@ -81,6 +84,7 @@ class iocontrol{
 		int _currentPlace;
 		bool _created = false;
 		bool _intervalSet = false;
+		const uint8_t* _mac;
 		//bool _pending = false;
 		//uint8_t _mac[6];
 
