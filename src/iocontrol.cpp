@@ -395,14 +395,22 @@ int iocontrol::write(const String& varName, int var)
 
 int iocontrol::write(const String& varName, float var)
 {
+	//Serial.println(var, 5);
 	if (!_httpRequest())
 		return connectionFailed;
 
-	_client.println(
-			(String)"GET /api/sendData/"
+	String flt = String(var, 5);
+	String req = (String)"GET /api/sendData/"
 			+ _boardName + "/" + varName + "/"
-			+ var + "?key=" + key + " HTTP/1.1"
-		       );
+			+ flt + "?key=" + key + " HTTP/1.1";
+
+	Serial.println(req);
+
+	_client.println( req );
+////////		(String)"GET /api/sendData/"
+////////		+ _boardName + "/" + varName + "/"
+////////		+ var + "?key=" + key + " HTTP/1.1"
+////////	       );
 	_rest();
 	return 0;
 }
