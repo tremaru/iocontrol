@@ -5,11 +5,16 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <ArduinoJson.h>
-//typedef char* String;
+
+#define DEFAULT_FLOAT_PRECISION 2
+#define DEFAULT_WRITE_INTERVAL 3000
+#define DEFAULT_READ_INTERVAL 5000
+#define MAX_TRIES 10
 
 class iocontrol{
 
 	public:
+		// constructor
 		iocontrol(const char* boardName);
 		iocontrol(const char* boardName, const char* key);
 		iocontrol(const char* boardName, uint8_t* mac);
@@ -22,28 +27,29 @@ class iocontrol{
 
 		long readInt(const String& varName);
 		float readFloat(const String& varName);
+		float readFloat(const String& varName, uint8_t prec);
 		char* readCstring(const String& varName);
 		String readString(const String& varName);
 		bool readBool(const String& varName);
 
-		//template <typename T> int write(String varName, T var);
-
 		void write(const String& varName, int var);
-		int write(const String& varName, float var);
-		int write(const String& varName, float var, uint8_t prec);
-		int write(const String& varName, String var);
-		int write(const String& varName, bool var);
+		void write(const String& varName, long var);
+		void write(const String& varName, float var);
+		void write(const String& varName, float var, uint8_t prec);
+		void write(const String& varName, String var);
+		void write(const String& varName, bool var);
 
 		//vars
-
+		//no public vars. Not yet...
 
 	private:
 
-		// functions
+		// funcs
 		bool _httpRequest();
 		bool _discardHeader();
 		int _fillData(int& i);
-		int _sendData(int& i);
+		int _sendData(String& data);
+		String _prepData(int& i);
 		int _parseJson(bool& ioBool, String& json, const String& field);
 		int _parseJson(int& ioInt, String& json, const String& field);
 		int _parseJson(long& ioInt, String& json, const String& field);
@@ -51,7 +57,6 @@ class iocontrol{
 		int _parseJson(String& ioString, String& json, const String& field);
 		int _httpStatus();
 		void _rest();
-		//JsonObject _parseJsonRoot(String& json, int& error);
 
 		enum type {
 			is_int,
@@ -60,21 +65,26 @@ class iocontrol{
 		};
 
 		// vars
-		long currentMillis;
-		uint16_t _intervalR = 5000;
-		uint16_t _intervalW = 3000;
+		long currentMillisR = 0;
+		long currentMillisW = 0;
+		uint16_t _intervalR = DEFAULT_READ_INTERVAL;
+		uint16_t _intervalW = DEFAULT_WRITE_INTERVAL;
+
 		struct t_item {
 			t_item() {
-				_string = 0;
+				_string = nullptr;
+				_prec = DEFAULT_FLOAT_PRECISION;
+				_tries = MAX_TRIES;
 			}
 			String name;
 			type v_type;
+			uint8_t _prec;
+			uint8_t _tries;
 			bool _pending = false;
 			union {
 				long _int;
 				float _float;
                                 char* _string;
-				//String* _String;
 			};
 		};
 
@@ -87,19 +97,12 @@ class iocontrol{
 		bool _intervalSet = false;
 		bool _boardExists = true;
 		uint8_t* _mac;
-		//bool _pending = false;
-		//uint8_t _mac[6];
 
 		const char* _server = "www.iocontrol.ru";
 		const char* _key;
-		//IPAddress _server();
-		//
+
+		//Obj
 		EthernetClient _client;
-
-		//byte mac[6] = {
-		//        0xFE, 0xED, 0xDE, 0xAD, 0xBE, 0xEF
-		//};
-
 };
 
 #endif

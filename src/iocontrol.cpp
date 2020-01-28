@@ -1,4 +1,5 @@
 #include "iocontrol.h"
+
 //tabstop=8
 //#define __DEBUG__
 
@@ -6,8 +7,12 @@
 //TODO: add writeUpdate()
 
 #define jsonBufSiz 150
-
 StaticJsonDocument<jsonBufSiz> root;
+
+const char* legal = "abcdefghigklmnopqrstuvwxyz\
+		     ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
+const String value = "value";
+
 // errors
 enum {
 	emptyJson = 601,
@@ -15,8 +20,10 @@ enum {
 	noType = 603,
 	emptyBoard = 604,
 	bigJson = 605,
+	nothingToWrite = 606,
 	invalidHeader = 701,
 	intervalError = 702,
+	invalidResponse = 703,
 	connectionFailed = 801,
 	cableNotPlugged = 903,
 	noEthHardware = 902,
@@ -25,16 +32,17 @@ enum {
 };
 
 char headerEnd[] = "\r\n\r\n";
+
 uint8_t _defaultMac[6] = {
 	0xFE, 0xED, 0xDE, 0xAD, 0xBE, 0xEF
 };
+
 const char* _defaultKey = "0";
 
 iocontrol::iocontrol(const char* boardName)
 	: _mac(_defaultMac), _key(_defaultKey)
 {
 	_boardName = boardName;
-	//_mac[6] = {0xFE, 0xED, 0xDE, 0xAD, 0xBE, 0xEF};
 }
 
 iocontrol::iocontrol(const char* boardName, uint8_t* mac)
@@ -65,7 +73,11 @@ int iocontrol::begin()
 		else
 			return ethConfigFail;
 	}
-	//Serial.println(Ethernet.localIP());
+
+#ifdef __DEBUG__
+	Serial.println(Ethernet.localIP());
+#endif
+
 	delay(1000);
 	int error = readUpdate();
 
@@ -80,11 +92,13 @@ int iocontrol::readUpdate()
 	if (!_boardExists)
 		return invalidName;
 
-	if (millis() - currentMillis > _intervalR || !_created) {
+	if (millis() - currentMillisR > _intervalR || !_created) {
+		currentMillisR = millis();
+
 		if (!_httpRequest()) {
 			return connectionFailed;
 		}
-		///api/readDataAll/test2/0
+
 		_client.println(
 				(String)"GET /api/readDataAll/"
 				+ _boardName + "/" + _key
@@ -93,10 +107,8 @@ int iocontrol::readUpdate()
 
 		_rest();
 
-		currentMillis = millis();
 
 		if (int h_status = _httpStatus() != 200) {
-			//Serial.println("gottcha!");
 			return h_status;
 		}
 
@@ -105,7 +117,6 @@ int iocontrol::readUpdate()
 
 		if (_client.available()) {
 
-			//_client.readStringUntil('\n'); // bullshit line with number that correlates with the size of the response after header. WTF?
 			_client.find('{');
 			String s = "{" + _client.readStringUntil('[');
 			s.concat("\"\"}");
@@ -124,9 +135,7 @@ int iocontrol::readUpdate()
 			}
 
 			else {
-				//Serial.println(check);
 				_parseJson(_boardSize, s, F("countVariable"));
-				//Serial.println(_boardSize);
 			}
 
 
@@ -150,7 +159,6 @@ int iocontrol::readUpdate()
 				if (tmp > 0) {
 					_intervalR = 1000 * tmp;
 					i++;
-					//Serial.println(_intervalR);
 				}
 				_parseJson(tmp, s, F("timeW"));
 				if (tmp > 0) {
@@ -173,9 +181,6 @@ int iocontrol::readUpdate()
 					return jsonError;
 			}
 
-			//String tmp = "void";
-			//readInt(tmp);
-			//Serial.write(_client.read());
 		}
 		_client.stop();
 	}
@@ -188,23 +193,148 @@ int iocontrol::readUpdate()
 
 int iocontrol::writeUpdate()
 {
+	bool writeFlag = false;
 	if (!_boardExists)
 		return invalidName;
 
-	if (millis() - currentMillis > _intervalW && _created) {
-		if (!_httpRequest()) {
-			return connectionFailed;
-		}
+	if (millis() - currentMillisW > _intervalW && _created) {
+
+		currentMillisW = millis();
+
+
+		String reqString = "";
+
 		for (int i = 0; i < _boardSize; i++) {
 			if (_boardVars[i]._pending) {
-				_sendData(i);
+				writeFlag = true;
+				reqString += _boardVars[i].name;
+				reqString += ":";
+				reqString += _prepData(i);
+				reqString += ",";
 			}
 		}
-		//////
+
+		if (writeFlag)
+			return _sendData(reqString);
+
+		else
+			return nothingToWrite;
+
 	}
 	else
 		return intervalError;
 
+}
+
+String iocontrol::_prepData(int& i)
+{
+	String empty = "";
+	switch (_boardVars[i].v_type) {
+
+		case is_int:
+			return String(_boardVars[i]._int);
+
+		case is_float:
+			return String(_boardVars[i]._float, _boardVars[i]._prec);
+
+		case is_string:
+
+			if (_boardVars[i]._string
+					&& strspn(_boardVars[i]._string, legal)
+					== strlen(_boardVars[i]._string))
+				return String(_boardVars[i]._string);
+
+			else
+				return empty;
+
+
+		default:
+			return empty;
+	}
+}
+
+int iocontrol::_sendData(String& req)
+{
+
+	if (!_httpRequest()) {
+		return connectionFailed;
+	}
+/*
+	req = (String)"GET /api/sendDataAll/"
+	+ _boardName + "/" + _key + "/"
+	+ req + " HTTP/1.1";
+////
+////
+*/
+#ifdef __DEBUG__
+	Serial.println(req);
+#endif
+	_client.println(
+			(String)"GET /api/sendDataAll/"
+			+ _boardName + "/" + _key + "/"
+			+ req + " HTTP/1.1"
+		       );
+	_rest();
+
+	if (int h_status = _httpStatus() != 200) {
+		return h_status;
+	}
+
+	if (!_discardHeader())
+		return invalidHeader;
+
+	if (_client.available()) {
+
+		_client.find('{');
+		String s = "{" + _client.readStringUntil('{');
+		s.concat("\"\"}");
+
+		bool check = false;
+		int jsonError = _parseJson(check, s, F("check"));
+
+
+		if (jsonError)
+			return jsonError;
+
+		else if (!check)
+			return _parseJson(jsonError, s, F("message"));
+
+
+		check = false;
+		s = "{" + _client.readStringUntil('}');
+		s.concat("}");
+#ifdef __DEBUG__
+		Serial.println(s);
+#endif
+
+		for (int i = 0; i < _boardSize; i++) {
+			jsonError = _parseJson(check, s, String(_boardVars[i].name));
+			if (jsonError)
+				return jsonError;
+#ifdef __DEBUG__
+			Serial.print(jsonError);
+			Serial.print("\t\t\t");
+			Serial.print(check);
+			Serial.print("\t\t\t");
+			Serial.println(_boardVars[i]._tries);
+#endif
+
+			if (check)
+				_boardVars[i]._pending = false;
+
+			else if (_boardVars[i]._pending)
+				_boardVars[i]._tries--;
+
+
+			if (!_boardVars[i]._tries) {
+				_boardVars[i]._pending = false;
+				_boardVars[i]._tries = MAX_TRIES;
+			}
+		}
+
+	}
+	else
+		return invalidResponse;
 }
 
 long iocontrol::readInt(const String& name)
@@ -277,7 +407,6 @@ int iocontrol::_parseJson(bool& ioBool, String& json, const String& field)
 	if (json.length() > jsonBufSiz)
 		return bigJson;
 
-	//StaticJsonDocument<jsonBufSiz> root;
 	DeserializationError error = deserializeJson(root, json);
 
 	if (error)
@@ -296,7 +425,6 @@ int iocontrol::_parseJson(int& ioInt, String& json, const String& field)
 	if (json.length() > jsonBufSiz)
 		return bigJson;
 
-	//StaticJsonDocument<jsonBufSiz> root;
 	DeserializationError error = deserializeJson(root, json);
 
 	if (error)
@@ -315,7 +443,6 @@ int iocontrol::_parseJson(long& ioInt, String& json, const String& field)
 	if (json.length() > jsonBufSiz)
 		return bigJson;
 
-	//StaticJsonDocument<jsonBufSiz> root;
 	DeserializationError error = deserializeJson(root, json);
 
 	if (error)
@@ -334,7 +461,6 @@ int iocontrol::_parseJson(float& ioFloat, String& json, const String& field)
 	if (json.length() > jsonBufSiz)
 		return bigJson;
 
-	//StaticJsonDocument<jsonBufSiz> root;
 	DeserializationError error = deserializeJson(root, json);
 
 	if (error)
@@ -353,7 +479,6 @@ int iocontrol::_parseJson(String& ioString, String& json, const String& field)
 	if (json.length() > jsonBufSiz)
 		return bigJson;
 
-	//StaticJsonDocument<jsonBufSiz> root;
 	DeserializationError error = deserializeJson(root, json);
 
 	if (error)
@@ -364,42 +489,6 @@ int iocontrol::_parseJson(String& ioString, String& json, const String& field)
 
 	return 0;
 }
-
-/*JsonObject iocontrol::_parseJsonRoot(String& json, int& error)
-{
-	if (json == "") {
-		error =  emptyJson;
-		return;
-	}
-
-
-	if (json.length() > jsonBufSiz) {
-		error = bigJson;
-		return;
-	}
-	StaticJsonDocument<200> root;
-	DeserializationError err = deserializeJson(root, json);
-	if (err) {
-		error = failedJsonRoot;
-		return;
-	}
-
-	//char buf[jsonBufSiz]{0};
-	//json.toCharArray(buf, sizeof(buf));
-	////DynamicJsonBuffer jsonBuffer(200);
-	//StaticJsonBuffer<jsonBufSiz> jsonBuffer;
-	//JsonObject& root = jsonBuffer.parseObject(buf);
-
-	//if (!root.success()) {
-	//	error =  failedJsonRoot;
-#ifdef __DEBUG__
-		Serial.println(json);
-#endif
-//		return;
-//	}
-
-	return root.as<JsonObject>();
-}*/
 
 int iocontrol::_fillData(int& i)
 {
@@ -417,23 +506,26 @@ int iocontrol::_fillData(int& i)
 	if (type == F("int")) {
 
 		_boardVars[i].v_type = is_int;
-		jsonError = _parseJson(_boardVars[i]._int, s, F("value"));
+		jsonError = _parseJson(_boardVars[i]._int, s, value);
 	}
 	else if (type == F("float")) {
 
 		_boardVars[i].v_type = is_float;
-		jsonError = _parseJson(_boardVars[i]._float, s, F("value"));
+		jsonError = _parseJson(_boardVars[i]._float, s, value);
 	}
 	else if (type == F("string")) {
 
 		_boardVars[i].v_type = is_string;
 		String tmp = "";
-		jsonError = _parseJson(tmp, s, F("value"));
+		jsonError = _parseJson(tmp, s, value);
+
 		if (_boardVars[i]._string)
 			delete[] _boardVars[i]._string;
+
 		_boardVars[i]._string = new char[tmp.length() + 1];
 		tmp.toCharArray(_boardVars[i]._string, tmp.length() + 1);
 	}
+
 	else
 		return noType;
 
@@ -445,85 +537,68 @@ int iocontrol::_fillData(int& i)
         return 0;
 }
 
-//template <typename T> int iocontrol::write(String varName, T var)
-void iocontrol::write(const String& varName, int var)
+void iocontrol::write(const String& varName, long var)
 {
 	for (int i = 0; i < _boardSize; i++) {
 		if (_boardVars[i].name == varName
 				&& _boardVars[i].v_type == is_int) {
-			_boardVars[i]._int = var;
-			_boardVars[i]._pending = true;
+			if (_boardVars[i]._int != var) {
+				_boardVars[i]._int = var;
+				_boardVars[i]._pending = true;
+			}
 		}
 	}
-	//if (!_httpRequest())
-	//	return connectionFailed;
-
-	//_client.println(
-	//		(String)"GET /api/sendData/"
-	//		+ _boardName + "/" + varName + "/"
-	//		+ var + "?key=" + _key + " HTTP/1.1"
-	//	       );
-
-	//_rest();
-	//return 0;
 }
 
-int iocontrol::write(const String& varName, float var)
+void iocontrol::write(const String& varName, int var)
 {
-	if (!_httpRequest())
-		return connectionFailed;
-
-	String flt = String(var, 5);
-	String req = (String)"GET /api/sendData/"
-			+ _boardName + "/" + varName + "/"
-			+ flt + "?key=" + _key + " HTTP/1.1";
-
-	_client.println(req);
-	_rest();
-	return 0;
+	write(varName, long(var));
 }
 
-int iocontrol::write(const String& varName, float var, uint8_t prec)
+void iocontrol::write(const String& varName, float var)
 {
-	if (!_httpRequest())
-		return connectionFailed;
-
-	String flt = String(var, prec);
-	String req = (String)"GET /api/sendData/"
-			+ _boardName + "/" + varName + "/"
-			+ flt + "?key=" + _key + " HTTP/1.1";
-
-	_client.println(req);
-	_rest();
-	return 0;
+	write(varName, var, 2);
 }
 
-int iocontrol::write(const String& varName, String var)
+void iocontrol::write(const String& varName, float var, uint8_t prec)
 {
-	if (!_httpRequest())
-		return connectionFailed;
-
-	_client.println(
-			(String)"GET /api/sendData/"
-			+ _boardName + "/" + varName + "/"
-			+ var + "?key=" + _key + " HTTP/1.1"
-		       );
-	_rest();
-	return 0;
+	for (int i = 0; i < _boardSize; i++) {
+		if (_boardVars[i].name == varName
+				&& _boardVars[i].v_type == is_float) {
+			if (abs(_boardVars[i]._float) - abs(var) > 0.00001) {
+				_boardVars[i]._float = var;
+				_boardVars[i]._prec = prec;
+				_boardVars[i]._pending = true;
+			}
+		}
+	}
+	//String flt = String(var, prec);
 }
 
-int iocontrol::write(const String& varName, bool var)
+void iocontrol::write(const String& varName, String var)
 {
-	if (!_httpRequest())
-		return connectionFailed;
+	for (int i = 0; i < _boardSize; i++) {
+		if (_boardVars[i].name == varName
+				&& _boardVars[i].v_type == is_string) {
 
-	_client.println(
-			(String)"GET /api/sendData/"
-			+ _boardName + "/" + varName + "/"
-			+ var + "?key=" + _key + " HTTP/1.1"
-		       );
-	_rest();
-	return 0;
+			if (String(_boardVars[i]._string) != var) {
+
+				if (_boardVars[i]._string)
+					delete[] _boardVars[i]._string;
+
+				_boardVars[i]._string = new char[var.length() + 1];
+				var.toCharArray(_boardVars[i]._string,
+						var.length() + 1);
+
+				_boardVars[i]._pending = true;
+			}
+		}
+	}
+}
+
+void iocontrol::write(const String& varName, bool var)
+{
+	write(varName, (int)var);
 }
 
 void iocontrol::_rest()
@@ -534,26 +609,3 @@ void iocontrol::_rest()
 	_client.println();
 
 }
-
-/*int iocontrol::_send()
-{
-	for (uint8_t i = 0; i < _boardSize; i++) {
-		if (_boardVars[i]._pending) {
-			//TODO;
-		}
-	}
-	return 0;
-
-}*/
-//template <> int iocontrol::write(String varName, int var);
-//int iocontrol::Write(String name, float var)
-//{
-//	if (!_httpRequest())
-//		return connectionFailed;
-//}
-//
-//int iocontrol::Write(String name, String var)
-//{
-//	if (!_httpRequest())
-//		return connectionFailed;
-//}
