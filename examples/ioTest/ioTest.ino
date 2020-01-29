@@ -1,36 +1,68 @@
-//#include <iarduino_I2C_SHT.h>
+#include <iarduino_I2C_SHT.h>
 #include <iocontrol.h>
 //#include <SPI.h>
 //#include <Ethernet.h>
 //#include <ArduinoJson.h>
 
-//iarduino_I2C_SHT mysens(0x09);
-//#define mymac {0xFE, 0xED, 0xDE, 0xAD, 0xDE, 0xAD}
 
-iocontrol mypanel("test2");
 
-//byte mac[] = mac;
+iarduino_I2C_SHT mysens;
+#define mymac {0xFE, 0xED, 0xDE, 0xAD, 0xDE, 0xAD}
+
+
+const char* ssid = "iarduino_2.4G";
+const char* password = "sxz32ds2";
+
+byte mac[] = mymac;
+
+iocontrol mypanel("test1", mac);
+//iocontrol mypanel("test1");
+
+String temp = "Temp";
+
 void setup()
 {
+
         Serial.begin(9600);
-        mypanel.begin();
-        mypanel.write("myInt2", 43);
-        //mysens.begin();
-        //memoryGet();
-        //Serial.println(sizeof(float));
+
+        while(int error = mypanel.begin()) {
+
+                Serial.println(error);
+                delay(100);
+
+        }
+
+        
+        mysens.begin();
 }
+
 
 void loop()
 {
-        if (mypanel.readAll() == 0) {
-        int i = mypanel.readInt("myInt2");
-        float f = mypanel.readFloat("myFloat3");
-        //String s = mypanel.readString("myString");
-        //char* c = mypanel.readCstring("myString");
-        Serial.println(i);
-        Serial.println(f, 3);
-        //Serial.println(s);
-        //Serial.println(c);
-        Serial.println();
+
+        int error;
+        float sens = mysens.getTem();
+        mypanel.write(temp, sens, 1);
+
+        if ((error = mypanel.writeUpdate()) == 0) {
+
+                Serial.print("updated: ");
+                Serial.println(mypanel.readFloat(temp), 1);
+
         }
+
+        else if (error == 702)
+                Serial.println("Are we there yet?");
+                
+
+        else if (error == 606)
+                Serial.println("nothing to write");
+
+
+        else
+                Serial.println("different error");
+
+        delay(1000);
+
 }
+
