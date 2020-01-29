@@ -4,13 +4,17 @@
 //#define __DEBUG__
 
 //TODO: discard header by '{'?
-//TODO: add writeUpdate()
+//TODO: expose error codes
+//TODO: expose init method for different ethernet shields
+//TODO: add ESP32 support
 
 #define jsonBufSiz 150
 StaticJsonDocument<jsonBufSiz> root;
 
+// legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
 		     ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
+
 const String value = "value";
 
 // errors
@@ -63,6 +67,7 @@ iocontrol::iocontrol(const char* boardName, const char* key, uint8_t* mac)
 	_boardName = boardName;
 }
 
+// inits ethernet shield, calls readUpdate()
 int iocontrol::begin()
 {
 	if (!Ethernet.begin(_mac)) {
@@ -77,7 +82,7 @@ int iocontrol::begin()
 #ifdef __DEBUG__
 	Serial.println(Ethernet.localIP());
 #endif
-
+	// let ethernet shield initialize
 	delay(1000);
 	int error = readUpdate();
 
@@ -87,11 +92,15 @@ int iocontrol::begin()
 	return error;
 }
 
+// read all vars from the server, creates vars (if not created),
+// updates vars from the server. Obj.begin() runs it one time
 int iocontrol::readUpdate()
 {
+	// forbid bombarding the server with bogus board names
 	if (!_boardExists)
 		return invalidName;
 
+	// check interval
 	if (millis() - currentMillisR > _intervalR || !_created) {
 		currentMillisR = millis();
 
@@ -125,13 +134,15 @@ int iocontrol::readUpdate()
 			// get boardSize
 			bool check = false;
 			int jsonError = _parseJson(check, s, F("check"));
+			int serverError = 0;
 
 			if (jsonError != 0) {
 				return jsonError;
 			}
 
 			else if (!check) {
-				return _parseJson(jsonError, s, F("message"));
+				_parseJson(serverError, s, F("message"));
+				return serverError;
 			}
 
 			else {
@@ -191,17 +202,22 @@ int iocontrol::readUpdate()
 	return 0;
 }
 
+// update all vars to server
 int iocontrol::writeUpdate()
 {
 	bool writeFlag = false;
+
+	// forbid bombarding the server with bogus board names
 	if (!_boardExists)
 		return invalidName;
 
+	// check interval
 	if (millis() - currentMillisW > _intervalW && _created) {
 
 		currentMillisW = millis();
 
 
+		// concat the request string
 		String reqString = "";
 
 		for (int i = 0; i < _boardSize; i++) {
@@ -209,11 +225,13 @@ int iocontrol::writeUpdate()
 				writeFlag = true;
 				reqString += _boardVars[i].name;
 				reqString += ":";
+				// call _prepData to convert vars to Strings
 				reqString += _prepData(i);
 				reqString += ",";
 			}
 		}
 
+		// call sendData() if there is data to send
 		if (writeFlag)
 			return _sendData(reqString);
 
@@ -226,6 +244,7 @@ int iocontrol::writeUpdate()
 
 }
 
+// convert var to String
 String iocontrol::_prepData(int& i)
 {
 	String empty = "";
@@ -245,7 +264,7 @@ String iocontrol::_prepData(int& i)
 				return String(_boardVars[i]._string);
 
 			else
-				return empty;
+				return String(F("illegal_char"));
 
 
 		default:
@@ -253,29 +272,29 @@ String iocontrol::_prepData(int& i)
 	}
 }
 
+// send data to the server
 int iocontrol::_sendData(String& req)
 {
 
 	if (!_httpRequest()) {
 		return connectionFailed;
 	}
-/*
-	req = (String)"GET /api/sendDataAll/"
-	+ _boardName + "/" + _key + "/"
-	+ req + " HTTP/1.1";
-////
-////
-*/
+
 #ifdef __DEBUG__
 	Serial.println(req);
 #endif
+
+	// request with data
 	_client.println(
 			(String)"GET /api/sendDataAll/"
 			+ _boardName + "/" + _key + "/"
 			+ req + " HTTP/1.1"
 		       );
+
+	// rest of the requset
 	_rest();
 
+	// check for success
 	if (int h_status = _httpStatus() != 200) {
 		return h_status;
 	}
@@ -291,26 +310,32 @@ int iocontrol::_sendData(String& req)
 
 		bool check = false;
 		int jsonError = _parseJson(check, s, F("check"));
+		int serverError = 0;
 
 
 		if (jsonError)
 			return jsonError;
 
-		else if (!check)
-			return _parseJson(jsonError, s, F("message"));
+		else if (!check) {
+			_parseJson(serverError, s, F("message"));
+			return serverError;
+		}
 
 
 		check = false;
 		s = "{" + _client.readStringUntil('}');
 		s.concat("}");
+
 #ifdef __DEBUG__
 		Serial.println(s);
 #endif
 
+		// check if all vars were written successfully
 		for (int i = 0; i < _boardSize; i++) {
 			jsonError = _parseJson(check, s, String(_boardVars[i].name));
 			if (jsonError)
 				return jsonError;
+
 #ifdef __DEBUG__
 			Serial.print(jsonError);
 			Serial.print("\t\t\t");
@@ -319,24 +344,29 @@ int iocontrol::_sendData(String& req)
 			Serial.println(_boardVars[i]._tries);
 #endif
 
+			// reset pending for write flag if updated succsessfully
 			if (check)
 				_boardVars[i]._pending = false;
 
+			// decrement tries counter
 			else if (_boardVars[i]._pending)
 				_boardVars[i]._tries--;
 
 
+			// give up and reset counter if it reached zero
 			if (!_boardVars[i]._tries) {
 				_boardVars[i]._pending = false;
 				_boardVars[i]._tries = MAX_TRIES;
 			}
 		}
-
 	}
 	else
 		return invalidResponse;
+
+	return 0;
 }
 
+// get integer from memory
 long iocontrol::readInt(const String& name)
 {
 	for (int i = 0; i < _boardSize; i++) {
@@ -347,6 +377,7 @@ long iocontrol::readInt(const String& name)
 	return 0;
 }
 
+// get float from memory
 float iocontrol::readFloat(const String& name)
 {
 	for (int i = 0; i < _boardSize; i++) {
@@ -357,6 +388,7 @@ float iocontrol::readFloat(const String& name)
 	return 0;
 }
 
+// get C string from memory
 char* iocontrol::readCstring(const String& name)
 {
 	for (int i = 0; i < _boardSize; i++) {
@@ -367,11 +399,13 @@ char* iocontrol::readCstring(const String& name)
 	return 0;
 }
 
+// get String object from memory
 String iocontrol::readString(const String& name)
 {
 	return String(readCstring(name));
 }
 
+// connect to server
 bool iocontrol::_httpRequest()
 {
 	_client.stop();
@@ -384,11 +418,13 @@ bool iocontrol::_httpRequest()
 	}
 }
 
+// header ends with CR LF CR LF
 bool iocontrol::_discardHeader()
 {
 	return _client.find(headerEnd);
 }
 
+// read first line of the response and get the request status
 int iocontrol::_httpStatus()
 {
 	String status = _client.readStringUntil('\n');
@@ -399,42 +435,49 @@ int iocontrol::_httpStatus()
 	return status.toInt();
 }
 
+// parse a boolean from JSON
 int iocontrol::_parseJson(bool& ioBool, String& json, const String& field)
 {
-	if (json == "")
-		return emptyJson;
+	//long longBool = ioBool;
+	return _parseJson((long&)ioBool, json, field);
+	//if (json == "")
+	//	return emptyJson;
 
-	if (json.length() > jsonBufSiz)
-		return bigJson;
+	//if (json.length() > jsonBufSiz)
+	//	return bigJson;
 
-	DeserializationError error = deserializeJson(root, json);
+	//DeserializationError error = deserializeJson(root, json);
 
-	if (error)
-		return failedJsonRoot;
+	//if (error)
+	//	return failedJsonRoot;
 
-	ioBool = root[field];
+	//ioBool = root[field];
 
-	return 0;
+	//return 0;
 }
 
+// parse an integer from JSON
 int iocontrol::_parseJson(int& ioInt, String& json, const String& field)
 {
-	if (json == "")
-		return emptyJson;
+	//long longInt = ioInt;
+	return _parseJson((long&)ioInt, json, field);
+	//if (json == "")
+	//	return emptyJson;
 
-	if (json.length() > jsonBufSiz)
-		return bigJson;
+	//if (json.length() > jsonBufSiz)
+	//	return bigJson;
 
-	DeserializationError error = deserializeJson(root, json);
+	//DeserializationError error = deserializeJson(root, json);
 
-	if (error)
-		return failedJsonRoot;
+	//if (error)
+	//	return failedJsonRoot;
 
-	ioInt = root[field];
+	//ioInt = root[field];
 
-	return 0;
+	//return 0;
 }
 
+// parse a long integer from JSON
 int iocontrol::_parseJson(long& ioInt, String& json, const String& field)
 {
 	if (json == "")
@@ -453,6 +496,7 @@ int iocontrol::_parseJson(long& ioInt, String& json, const String& field)
 	return 0;
 }
 
+// parse a float from JSON
 int iocontrol::_parseJson(float& ioFloat, String& json, const String& field)
 {
 	if (json == "")
@@ -471,6 +515,7 @@ int iocontrol::_parseJson(float& ioFloat, String& json, const String& field)
 	return 0;
 }
 
+// parse a String object from JSON
 int iocontrol::_parseJson(String& ioString, String& json, const String& field)
 {
 	if (json == "")
@@ -557,7 +602,7 @@ void iocontrol::write(const String& varName, int var)
 
 void iocontrol::write(const String& varName, float var)
 {
-	write(varName, var, 2);
+	write(varName, var, DEFAULT_FLOAT_PRECISION);
 }
 
 void iocontrol::write(const String& varName, float var, uint8_t prec)
@@ -565,7 +610,8 @@ void iocontrol::write(const String& varName, float var, uint8_t prec)
 	for (int i = 0; i < _boardSize; i++) {
 		if (_boardVars[i].name == varName
 				&& _boardVars[i].v_type == is_float) {
-			if (abs(_boardVars[i]._float) - abs(var) > 0.00001) {
+			if (abs(abs(_boardVars[i]._float) - abs(var))
+					> pow(10, -prec)) {
 				_boardVars[i]._float = var;
 				_boardVars[i]._prec = prec;
 				_boardVars[i]._pending = true;
@@ -598,7 +644,7 @@ void iocontrol::write(const String& varName, String var)
 
 void iocontrol::write(const String& varName, bool var)
 {
-	write(varName, (int)var);
+	write(varName, long(var));
 }
 
 void iocontrol::_rest()
