@@ -9,10 +9,6 @@
 iarduino_I2C_SHT mysens;
 #define mymac {0xFE, 0xED, 0xDE, 0xAD, 0xDE, 0xAD}
 
-
-const char* ssid = "iarduino_2.4G";
-const char* password = "sxz32ds2";
-
 byte mac[] = mymac;
 
 iocontrol mypanel("test1", mac);
