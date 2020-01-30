@@ -68,16 +68,22 @@ iocontrol::iocontrol(const char* boardName, const char* key, uint8_t* mac)
 }
 
 // inits ethernet shield, calls readUpdate()
-int iocontrol::begin()
+#ifdef __AVR__
+int iocontrol::begin(const EthernetClient& client)
+#endif
+#if defined(ESP8266) || defined(ESP32)
+int iocontrol::begin(const WiFiClient& client)
+#endif
 {
-	if (!Ethernet.begin(_mac)) {
-		if (Ethernet.hardwareStatus() == EthernetNoHardware)
-			return noEthHardware;
-		else if (Ethernet.linkStatus() == LinkOFF)
-			return cableNotPlugged;
-		else
-			return ethConfigFail;
-	}
+	_client = client;
+	//if (!Ethernet.begin(_mac)) {
+	//	if (Ethernet.hardwareStatus() == EthernetNoHardware)
+	//		return noEthHardware;
+	//	else if (Ethernet.linkStatus() == LinkOFF)
+	//		return cableNotPlugged;
+	//	else
+	//		return ethConfigFail;
+	//}
 
 #ifdef __DEBUG__
 	Serial.println(Ethernet.localIP());
@@ -441,24 +447,28 @@ int iocontrol::_parseJson(bool& ioBool, const String& json, const String& field)
         if (json == "")
                 return emptyJson;
 
-        int i = json.lastIndexOf(field);
+	String json2 = json;
+	json2 += "}";
+        int i = json2.lastIndexOf(field);
         int j = -1;
         i += field.length() + 2;
-        if (json[i] == '\"') {
+        if (json2[i] == '\"') {
                 i++;
-                j = json.indexOf("\"", i);
+                j = json2.indexOf("\"", i);
         }
 
         if (j == -1)
-                j = json.indexOf(",", i);
+                j = json2.indexOf(",", i);
 
         if (j == -1)
-                j = json.indexOf("}", i);
+                j = json2.indexOf("}", i);
 
-        if (j == -1)
+        if (j == -1) {
+		//Serial.println(json);
                 return failedJsonRoot;
+	}
 
-        if (json.substring(i, j) == "true")
+        if (json2.substring(i, j) == "true")
                 ioBool = true;
         else
                 ioBool = false;
@@ -572,10 +582,13 @@ int iocontrol::_parseJson(String& ioString, const String& json, const String& fi
         if (j == -1)
                 j = json.indexOf("}", i);
 
-        if (j == -1)
+        if (j == -1) {
+		//Serial.println(j);
                 return failedJsonRoot;
+	}
 
         ioString = json.substring(i, j);
+	//Serial.println(ioString);
 
         return 0;
 }
