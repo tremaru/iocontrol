@@ -9,7 +9,7 @@
 //TODO: add ESP32 support
 
 #define jsonBufSiz 150
-StaticJsonDocument<jsonBufSiz> root;
+//StaticJsonDocument<jsonBufSiz> root;
 
 // legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
@@ -436,103 +436,148 @@ int iocontrol::_httpStatus()
 }
 
 // parse a boolean from JSON
-int iocontrol::_parseJson(bool& ioBool, String& json, const String& field)
+int iocontrol::_parseJson(bool& ioBool, const String& json, const String& field)
 {
-	//long longBool = ioBool;
-	return _parseJson((long&)ioBool, json, field);
-	//if (json == "")
-	//	return emptyJson;
+        if (json == "")
+                return emptyJson;
 
-	//if (json.length() > jsonBufSiz)
-	//	return bigJson;
+        int i = json.lastIndexOf(field);
+        int j = -1;
+        i += field.length() + 2;
+        if (json[i] == '\"') {
+                i++;
+                j = json.indexOf("\"", i);
+        }
 
-	//DeserializationError error = deserializeJson(root, json);
+        if (j == -1)
+                j = json.indexOf(",", i);
 
-	//if (error)
-	//	return failedJsonRoot;
+        if (j == -1)
+                j = json.indexOf("}", i);
 
-	//ioBool = root[field];
+        if (j == -1)
+                return failedJsonRoot;
 
-	//return 0;
+        if (json.substring(i, j) == "true")
+                ioBool = true;
+        else
+                ioBool = false;
+
+        return 0;
 }
 
 // parse an integer from JSON
-int iocontrol::_parseJson(int& ioInt, String& json, const String& field)
-{
-	//long longInt = ioInt;
-	return _parseJson((long&)ioInt, json, field);
-	//if (json == "")
-	//	return emptyJson;
-
-	//if (json.length() > jsonBufSiz)
-	//	return bigJson;
-
-	//DeserializationError error = deserializeJson(root, json);
-
-	//if (error)
-	//	return failedJsonRoot;
-
-	//ioInt = root[field];
-
-	//return 0;
-}
-
-// parse a long integer from JSON
-int iocontrol::_parseJson(long& ioInt, String& json, const String& field)
+int iocontrol::_parseJson(int& ioInt, const String& json, const String& field)
 {
 	if (json == "")
 		return emptyJson;
 
-	if (json.length() > jsonBufSiz)
-		return bigJson;
+	int i = json.lastIndexOf(field);
+	int j = -1;
+	i += field.length() + 2;
+	if (json[i] == '\"') {
+		i++;
+		j = json.indexOf("\"", i);
+	}
 
-	DeserializationError error = deserializeJson(root, json);
+	if (j == -1)
+		j = json.indexOf(",", i);
 
-	if (error)
+	if (j == -1)
+		j = json.indexOf("}", i);
+
+	if (j == -1)
 		return failedJsonRoot;
 
-	ioInt = root[field];
+	ioInt = (int)json.substring(i, j).toInt();
+
+	return 0;
+}
+
+// parse a long integer from JSON
+int iocontrol::_parseJson(long& ioInt, const String& json, const String& field)
+{
+	if (json == "")
+		return emptyJson;
+
+	int i = json.lastIndexOf(field);
+	int j = -1;
+	i += field.length() + 2;
+	if (json[i] == '\"') {
+		i++;
+		j = json.indexOf("\"", i);
+	}
+
+	if (j == -1)
+		j = json.indexOf(",", i);
+
+	if (j == -1)
+		j = json.indexOf("}", i);
+
+	if (j == -1)
+		return failedJsonRoot;
+
+	String tmp = json.substring(i, j);
+
+	ioInt = tmp.toInt();
 
 	return 0;
 }
 
 // parse a float from JSON
-int iocontrol::_parseJson(float& ioFloat, String& json, const String& field)
+int iocontrol::_parseJson(float& ioFloat, const String& json, const String& field)
 {
-	if (json == "")
-		return emptyJson;
+        if (json == "")
+                return emptyJson;
 
-	if (json.length() > jsonBufSiz)
-		return bigJson;
+        int i = json.lastIndexOf(field);
+        int j = -1;
+        i += field.length() + 2;
+        if (json[i] == '\"') {
+                i++;
+                j = json.indexOf("\"", i);
+        }
 
-	DeserializationError error = deserializeJson(root, json);
+        if (j == -1)
+                j = json.indexOf(",", i);
 
-	if (error)
-		return failedJsonRoot;
+        if (j == -1)
+                j = json.indexOf("}", i);
 
-	ioFloat = root[field];
+        if (j == -1)
+                return failedJsonRoot;
 
-	return 0;
+        ioFloat = json.substring(i, j).toFloat();
+
+        return 0;
 }
 
 // parse a String object from JSON
-int iocontrol::_parseJson(String& ioString, String& json, const String& field)
+int iocontrol::_parseJson(String& ioString, const String& json, const String& field)
 {
-	if (json == "")
-		return emptyJson;
+        if (json == "")
+                return emptyJson;
 
-	if (json.length() > jsonBufSiz)
-		return bigJson;
+        int i = json.lastIndexOf(field);
+        int j = -1;
+        i += field.length() + 2;
+        if (json[i] == '\"') {
+                i++;
+                j = json.indexOf("\"", i);
+        }
 
-	DeserializationError error = deserializeJson(root, json);
+        if (j == -1)
+                j = json.indexOf(",", i);
 
-	if (error)
-		return failedJsonRoot;
+        if (j == -1)
+                j = json.indexOf("}", i);
 
-	char* tmp = root[field];
-	ioString = (String)tmp;
+        if (j == -1)
+                return failedJsonRoot;
 
-	return 0;
+        ioString = json.substring(i, j);
+
+        return 0;
 }
 
 int iocontrol::_fillData(int& i)

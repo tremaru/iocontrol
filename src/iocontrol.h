@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Ethernet.h>
-#include <ArduinoJson.h>
+//#include <ArduinoJson.h>
 
 #define DEFAULT_FLOAT_PRECISION 2
 #define DEFAULT_WRITE_INTERVAL 3000
@@ -50,11 +50,11 @@ class iocontrol{
 		int _fillData(int& i);
 		int _sendData(String& data);
 		String _prepData(int& i);
-		int _parseJson(bool& ioBool, String& json, const String& field);
-		int _parseJson(int& ioInt, String& json, const String& field);
-		int _parseJson(long& ioInt, String& json, const String& field);
-		int _parseJson(float& ioFloat, String& json, const String& field);
-		int _parseJson(String& ioString, String& json, const String& field);
+		int _parseJson(bool& ioBool, const String& json, const String& field);
+		int _parseJson(int& ioInt, const String& json, const String& field);
+		int _parseJson(long& ioInt, const String& json, const String& field);
+		int _parseJson(float& ioFloat, const String& json, const String& field);
+		int _parseJson(String& ioString, const String& json, const String& field);
 		int _httpStatus();
 		void _rest();
 
