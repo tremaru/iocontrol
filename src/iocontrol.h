@@ -3,15 +3,6 @@
 
 #include <Arduino.h>
 #include <Client.h>
-//#include <SPI.h>
-#ifdef __AVR__
-	#include <Ethernet.h>
-#endif
-#if defined(ESP8266) || defined(ESP32)
-	#include <WiFi.h>
-#endif
-//#include <ArduinoJson.h>
-//#include <Client.h>
 
 #define DEFAULT_FLOAT_PRECISION 2
 #define DEFAULT_WRITE_INTERVAL 3000
@@ -22,18 +13,11 @@ class iocontrol{
 
 	public:
 		// constructor
-		iocontrol(const char* boardName);
-		iocontrol(const char* boardName, const char* key);
-		iocontrol(const char* boardName, uint8_t* mac);
-		iocontrol(const char* boardName, const char* key, uint8_t* mac);
+		iocontrol(const char* boardName, Client& client);
+		iocontrol(const char* boardName, const char* key, Client& client);
 
 		// funcs
-#ifdef __AVR__
-		int begin(const EthernetClient& client);
-#endif
-#if defined(ESP8266) || defined(ESP32)
-		int begin(const WiFiClient& client);
-#endif
+		int begin();
 		int readUpdate();
 		int writeUpdate();
 
@@ -108,58 +92,12 @@ class iocontrol{
 		bool _created = false;
 		bool _intervalSet = false;
 		bool _boardExists = true;
-		uint8_t* _mac;
 
 		const char* _server = "www.iocontrol.ru";
 		const char* _key;
 
 		//Obj
-#ifdef __AVR__
-		EthernetClient _client;
-#endif
-
-#if defined(ESP8266) || defined(ESP32)
-		WiFiClient _client;
-#endif
+		Client& _client;
 };
 
-/*
-class EthernetClient{
-public:
-	EthernetClient() : sockindex(MAX_SOCK_NUM), _timeout(1000) { }
-	EthernetClient(uint8_t s) : sockindex(s), _timeout(1000) { }
-
-	uint8_t status();
-	virtual int connect(IPAddress ip, uint16_t port);
-	virtual int connect(const char *host, uint16_t port);
-	virtual int availableForWrite(void);
-	virtual size_t write(uint8_t);
-	virtual size_t write(const uint8_t *buf, size_t size);
-	virtual int available();
-	virtual int read();
-	virtual int read(uint8_t *buf, size_t size);
-	virtual int peek();
-	virtual void flush();
-	virtual void stop();
-	virtual uint8_t connected();
-	virtual operator bool() { return sockindex < MAX_SOCK_NUM; }
-	virtual bool operator==(const bool value) { return bool() == value; }
-	virtual bool operator!=(const bool value) { return bool() != value; }
-	virtual bool operator==(const EthernetClient&);
-	virtual bool operator!=(const EthernetClient& rhs) { return !this->operator==(rhs); }
-	uint8_t getSocketNumber() const { return sockindex; }
-	virtual uint16_t localPort();
-	virtual IPAddress remoteIP();
-	virtual uint16_t remotePort();
-	virtual void setConnectionTimeout(uint16_t timeout) { _timeout = timeout; }
-
-	friend class EthernetServer;
-
-	using Print::write;
-
-private:
-	uint8_t sockindex; // MAX_SOCK_NUM means client not in use
-	uint16_t _timeout;
-};
-*/
 #endif

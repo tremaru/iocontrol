@@ -5,8 +5,6 @@
 
 //TODO: discard header by '{'?
 //TODO: expose error codes
-//TODO: expose init method for different ethernet shields
-//TODO: add ESP32 support
 
 #define jsonBufSiz 150
 //StaticJsonDocument<jsonBufSiz> root;
@@ -43,53 +41,21 @@ uint8_t _defaultMac[6] = {
 
 const char* _defaultKey = "0";
 
-iocontrol::iocontrol(const char* boardName)
-	: _mac(_defaultMac), _key(_defaultKey)
+iocontrol::iocontrol(const char* boardName, Client& client)
+	: _mac(_defaultMac), _key(_defaultKey), _client(client)
 {
 	_boardName = boardName;
 }
 
-iocontrol::iocontrol(const char* boardName, uint8_t* mac)
-	: _mac(mac), _key(_defaultKey)
+iocontrol::iocontrol(const char* boardName, const char* key, Client& client)
+	: _mac(_defaultMac), _key(key), _client(client)
 {
 	_boardName = boardName;
 }
 
-iocontrol::iocontrol(const char* boardName, const char* key)
-	: _mac(_defaultMac), _key(key)
+// calls readUpdate(), prevents further request if board don't exist
+int iocontrol::begin()
 {
-	_boardName = boardName;
-}
-
-iocontrol::iocontrol(const char* boardName, const char* key, uint8_t* mac)
-	: _mac(mac), _key(key)
-{
-	_boardName = boardName;
-}
-
-// inits ethernet shield, calls readUpdate()
-#ifdef __AVR__
-int iocontrol::begin(const EthernetClient& client)
-#endif
-#if defined(ESP8266) || defined(ESP32)
-int iocontrol::begin(const WiFiClient& client)
-#endif
-{
-	_client = client;
-	//if (!Ethernet.begin(_mac)) {
-	//	if (Ethernet.hardwareStatus() == EthernetNoHardware)
-	//		return noEthHardware;
-	//	else if (Ethernet.linkStatus() == LinkOFF)
-	//		return cableNotPlugged;
-	//	else
-	//		return ethConfigFail;
-	//}
-
-#ifdef __DEBUG__
-	Serial.println(Ethernet.localIP());
-#endif
-	// let ethernet shield initialize
-	delay(1000);
 	int error = readUpdate();
 
 	if (error == invalidName)
