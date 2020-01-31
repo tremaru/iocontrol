@@ -3,9 +3,6 @@
 //tabstop=8
 //#define __DEBUG__
 
-//TODO: discard header by '{'?
-//TODO: expose error codes
-
 // legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
 		     ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
@@ -408,36 +405,36 @@ int iocontrol::_httpStatus()
 // parse a boolean from JSON
 int iocontrol::_parseJson(bool& ioBool, const String& json, const String& field)
 {
-        if (json == "")
-                return emptyJson;
+	if (json == "")
+		return emptyJson;
 
 	String json2 = json;
 	json2 += "}";
-        int i = json2.lastIndexOf(field);
-        int j = -1;
-        i += field.length() + 2;
-        if (json2[i] == '\"') {
-                i++;
-                j = json2.indexOf("\"", i);
-        }
-
-        if (j == -1)
-                j = json2.indexOf(",", i);
-
-        if (j == -1)
-                j = json2.indexOf("}", i);
-
-        if (j == -1) {
-		//Serial.println(json);
-                return failedJsonRoot;
+	int i = json2.lastIndexOf(field);
+	int j = -1;
+	i += field.length() + 2;
+	if (json2[i] == '\"') {
+		i++;
+		j = json2.indexOf("\"", i);
 	}
 
-        if (json2.substring(i, j) == "true")
-                ioBool = true;
-        else
-                ioBool = false;
+	if (j == -1)
+		j = json2.indexOf(",", i);
 
-        return 0;
+	if (j == -1)
+		j = json2.indexOf("}", i);
+
+	if (j == -1) {
+		//Serial.println(json);
+		return failedJsonRoot;
+	}
+
+	if (json2.substring(i, j) == "true")
+		ioBool = true;
+	else
+		ioBool = false;
+
+	return 0;
 }
 
 // parse an integer from JSON
@@ -501,60 +498,60 @@ int iocontrol::_parseJson(long& ioInt, const String& json, const String& field)
 // parse a float from JSON
 int iocontrol::_parseJson(float& ioFloat, const String& json, const String& field)
 {
-        if (json == "")
-                return emptyJson;
+	if (json == "")
+		return emptyJson;
 
-        int i = json.lastIndexOf(field);
-        int j = -1;
-        i += field.length() + 2;
-        if (json[i] == '\"') {
-                i++;
-                j = json.indexOf("\"", i);
-        }
+	int i = json.lastIndexOf(field);
+	int j = -1;
+	i += field.length() + 2;
+	if (json[i] == '\"') {
+		i++;
+		j = json.indexOf("\"", i);
+	}
 
-        if (j == -1)
-                j = json.indexOf(",", i);
+	if (j == -1)
+		j = json.indexOf(",", i);
 
-        if (j == -1)
-                j = json.indexOf("}", i);
+	if (j == -1)
+		j = json.indexOf("}", i);
 
-        if (j == -1)
-                return failedJsonRoot;
+	if (j == -1)
+		return failedJsonRoot;
 
-        ioFloat = json.substring(i, j).toFloat();
+	ioFloat = json.substring(i, j).toFloat();
 
-        return 0;
+	return 0;
 }
 
 // parse a String object from JSON
 int iocontrol::_parseJson(String& ioString, const String& json, const String& field)
 {
-        if (json == "")
-                return emptyJson;
+	if (json == "")
+		return emptyJson;
 
-        int i = json.lastIndexOf(field);
-        int j = -1;
-        i += field.length() + 2;
-        if (json[i] == '\"') {
-                i++;
-                j = json.indexOf("\"", i);
-        }
-
-        if (j == -1)
-                j = json.indexOf(",", i);
-
-        if (j == -1)
-                j = json.indexOf("}", i);
-
-        if (j == -1) {
-		//Serial.println(j);
-                return failedJsonRoot;
+	int i = json.lastIndexOf(field);
+	int j = -1;
+	i += field.length() + 2;
+	if (json[i] == '\"') {
+		i++;
+		j = json.indexOf("\"", i);
 	}
 
-        ioString = json.substring(i, j);
+	if (j == -1)
+		j = json.indexOf(",", i);
+
+	if (j == -1)
+		j = json.indexOf("}", i);
+
+	if (j == -1) {
+		//Serial.println(j);
+		return failedJsonRoot;
+	}
+
+	ioString = json.substring(i, j);
 	//Serial.println(ioString);
 
-        return 0;
+	return 0;
 }
 
 int iocontrol::_fillData(int& i)
@@ -565,7 +562,7 @@ int iocontrol::_fillData(int& i)
 
 	String type = "";
 	int jsonError = _parseJson(type, s, F("type"));
-        _parseJson(_boardVars[i].name, s, F("variable"));
+	_parseJson(_boardVars[i].name, s, F("variable"));
 
 	if (jsonError)
 		return jsonError;
@@ -596,12 +593,12 @@ int iocontrol::_fillData(int& i)
 	else
 		return noType;
 
-        if (jsonError)
-                return jsonError;
+	if (jsonError)
+		return jsonError;
 
 	_client.read();
 
-        return 0;
+	return 0;
 }
 
 void iocontrol::write(const String& varName, long var)
@@ -640,7 +637,6 @@ void iocontrol::write(const String& varName, float var, uint8_t prec)
 			}
 		}
 	}
-	//String flt = String(var, prec);
 }
 
 void iocontrol::write(const String& varName, String var)
@@ -675,5 +671,4 @@ void iocontrol::_rest()
 	_client.println(F("User-Agent: arduino-ethernet"));
 	_client.println(F("Connection: close"));
 	_client.println();
-
 }
