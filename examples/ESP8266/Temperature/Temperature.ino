@@ -2,6 +2,7 @@
 #include <iocontrol.h>
 #include <ESP8266WiFi.h>
 
+// Знаков после запятой для функций write и println
 #define FLOAT_PRECISION 1
 
 const char* ssid = "название_точки_доступа_WiFi";
@@ -43,14 +44,14 @@ void loop()
         float sens = mysens.getTem();
         mypanel.write(temp, sens, FLOAT_PRECISION);
 
-        if ((error = mypanel.writeUpdate()) == 0) {
+        if ((message = mypanel.writeUpdate()) == OK) {
                 Serial.print("updated: ");
                 Serial.println(mypanel.readFloat(temp), FLOAT_PRECISION);
         }
-        else if (error == 702)
+        else if (message == WAITING)
                 Serial.println("Are we there yet?");
 
-        else if (error == 606)
+        else if (message == NO_CHANGE)
                 Serial.println("nothing to write");
 
         else
