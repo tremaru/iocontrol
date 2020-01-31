@@ -6,9 +6,6 @@
 //TODO: discard header by '{'?
 //TODO: expose error codes
 
-#define jsonBufSiz 150
-//StaticJsonDocument<jsonBufSiz> root;
-
 // legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
 		     ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
@@ -17,6 +14,7 @@ const String value = "value";
 
 // errors
 enum {
+	httpOk = 200,
 	emptyJson = 601,
 	failedJsonRoot = 602,
 	noType = 603,
@@ -42,13 +40,13 @@ uint8_t _defaultMac[6] = {
 const char* _defaultKey = "0";
 
 iocontrol::iocontrol(const char* boardName, Client& client)
-	: _mac(_defaultMac), _key(_defaultKey), _client(client)
+	: _key(_defaultKey), _client(client)
 {
 	_boardName = boardName;
 }
 
 iocontrol::iocontrol(const char* boardName, const char* key, Client& client)
-	: _mac(_defaultMac), _key(key), _client(client)
+	: _key(key), _client(client)
 {
 	_boardName = boardName;
 }
@@ -89,7 +87,7 @@ int iocontrol::readUpdate()
 		_rest();
 
 
-		if (int h_status = _httpStatus() != 200) {
+		if (int h_status = _httpStatus() != httpOk) {
 			return h_status;
 		}
 
@@ -267,7 +265,7 @@ int iocontrol::_sendData(String& req)
 	_rest();
 
 	// check for success
-	if (int h_status = _httpStatus() != 200) {
+	if (int h_status = _httpStatus() != httpOk) {
 		return h_status;
 	}
 

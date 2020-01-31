@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <Client.h>
 
+#define HTTP_OK 200
 #define DEFAULT_FLOAT_PRECISION 2
 #define DEFAULT_WRITE_INTERVAL 3000
 #define DEFAULT_READ_INTERVAL 5000

@@ -8,7 +8,7 @@ iarduino_I2C_SHT mysens;
 // MAC адрес Ethernet шилда
 byte mac[] = {
         0xFE, 0xED, 0xBE, 0xEF, 0xFA, 0xCC
-}
+};
 
 EthernetClient client;
 iocontrol mypanel("название_панели_iocontrol", client);
