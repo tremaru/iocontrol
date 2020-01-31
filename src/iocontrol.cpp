@@ -183,7 +183,6 @@ int iocontrol::writeUpdate()
 
 		currentMillisW = millis();
 
-
 		// concat the request string
 		String reqString = "";
 
@@ -671,4 +670,40 @@ void iocontrol::_rest()
 	_client.println(F("User-Agent: arduino-ethernet"));
 	_client.println(F("Connection: close"));
 	_client.println();
+}
+
+void iocontrol::panelInfo()
+{
+	Serial.print("Number of variables: ");
+	Serial.println(_boardSize);
+	for (int i = 0; i < _boardSize; i++) {
+		Serial.print("Name: ");
+		Serial.print(_boardVars[i].name);
+		Serial.print(", ");
+		Serial.print("type: ");
+
+		switch (_boardVars[i].v_type) {
+			case is_int:
+				Serial.print("int");
+				Serial.print(", ");
+				Serial.print("value: ");
+				Serial.print(_boardVars[i]._int);
+				break;
+			case is_float:
+				Serial.print("float");
+				Serial.print(", ");
+				Serial.print("value: ");
+				Serial.print(_boardVars[i]._float);
+				break;
+			case is_string:
+				Serial.print("string");
+				Serial.print(", ");
+				Serial.print("value: ");
+				Serial.print(_boardVars[i]._string);
+				break;
+			default:
+				break;
+		}
+		Serial.println();
+	}
 }

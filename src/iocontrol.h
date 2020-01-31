@@ -32,6 +32,8 @@ class iocontrol{
 		String readString(const String& varName);
 		bool readBool(const String& varName);
 
+		void panelInfo();
+
 		void write(const String& varName, int var);
 		void write(const String& varName, long var);
 		void write(const String& varName, float var);
@@ -65,8 +67,8 @@ class iocontrol{
 		};
 
 		// vars
-		long currentMillisR = 0;
-		long currentMillisW = 0;
+		unsigned long currentMillisR = 0;
+		unsigned long currentMillisW = 0;
 		uint16_t _intervalR = DEFAULT_READ_INTERVAL;
 		uint16_t _intervalW = DEFAULT_WRITE_INTERVAL;
 
