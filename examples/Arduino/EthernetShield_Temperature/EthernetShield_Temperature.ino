@@ -31,23 +31,23 @@ void setup()
 
 void loop()
 {
-        int message;
+        int status;
 
         float sens = mysens.getTem();
         mypanel.write(temp, sens);
 
-        if ((message = mypanel.writeUpdate()) == OK) {
+        if ((status = mypanel.writeUpdate()) == OK) {
                 Serial.print("updated: ");
                 Serial.println(mypanel.readFloat(temp));
         }
-        else if (message == WAITING)
+        else if (status == WAITING)
                 Serial.println("Are we there yet?");
 
-        else if (message == NO_CHANGE)
+        else if (status == NO_CHANGE)
                 Serial.println("nothing to write");
 
         else
-                Serial.println(String(message));
+                Serial.println(String(status));
 
         delay(1000);
 }

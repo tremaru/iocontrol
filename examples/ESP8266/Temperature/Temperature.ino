@@ -29,8 +29,8 @@ void setup()
               Serial.print(".");
         }
 
-        while(int error = mypanel.begin()) {
-                Serial.println(String(error));
+        while(int status = mypanel.begin()) {
+                Serial.println(String(status));
                 delay(100);
         }
 
@@ -39,23 +39,23 @@ void setup()
 
 void loop()
 {
-        int error;
+        int status;
 
         float sens = mysens.getTem();
         mypanel.write(temp, sens, FLOAT_PRECISION);
 
-        if ((message = mypanel.writeUpdate()) == OK) {
+        if ((status = mypanel.writeUpdate()) == OK) {
                 Serial.print("updated: ");
                 Serial.println(mypanel.readFloat(temp), FLOAT_PRECISION);
         }
-        else if (message == WAITING)
+        else if (status == WAITING)
                 Serial.println("Are we there yet?");
 
-        else if (message == NO_CHANGE)
+        else if (status == NO_CHANGE)
                 Serial.println("nothing to write");
 
         else
-                Serial.println(String(error));
+                Serial.println(String(status));
 
         delay(1000);
 }

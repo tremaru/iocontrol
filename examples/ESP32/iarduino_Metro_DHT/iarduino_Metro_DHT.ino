@@ -23,31 +23,31 @@ void setup()
               Serial.print(".");
         }
 
-        while(int error = mypanel.begin()) {
-                Serial.println(String(error));
+        while(int status = mypanel.begin()) {
+                Serial.println(String(status));
                 delay(100);
         }
 }
 
 void loop()
 {
-        int error;
+        int status;
 
         int light = Metro[0].read(DSL_LUX);
         mypanel.write(sensor, light);
 
-        if ((message = mypanel.writeUpdate()) == OK) {
+        if ((status = mypanel.writeUpdate()) == OK) {
                 Serial.print("updated: ");
                 Serial.println(mypanel.readInt(sensor));
         }
-        else if (message == WAITING)
+        else if (status == WAITING)
                 Serial.println("Are we there yet?");
 
-        else if (message == NO_CHANGE)
+        else if (status == NO_CHANGE)
                 Serial.println("nothing to write");
 
         else
-                Serial.println(String(message));
+                Serial.println(String(status));
 
         delay(1000);
 }
