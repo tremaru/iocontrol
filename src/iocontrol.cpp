@@ -109,6 +109,10 @@ int iocontrol::readUpdate()
 
 			else if (!check) {
 				_parseJson(serverError, s, F("message"));
+
+				if (serverError == invalidName)
+					_boardExists = false;
+
 				return serverError;
 			}
 
