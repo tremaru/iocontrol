@@ -13,7 +13,7 @@ This is a library that allows seamless integration of iocontrol.ru APIs to any d
 
 Пример/Example (Ethernet Shield):
 
-``` Arduino
+``` C++
 #include <iocontrol.h>
 #include <SPI.h>
 #include <Ethernet.h>
@@ -55,7 +55,7 @@ void loop()
 
 Пример/Example (ESP32):
 
-``` Arduino
+``` C++
 #include <iocontrol.h>
 #include <WiFi.h>
 
