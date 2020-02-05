@@ -29,7 +29,7 @@ byte mac[] = {
 
 // Настройки клиента (клиент должен быть передан в конструктор объекта панели)
 EthernetClient client;
-mypanel iocontrol(myPanelName, client);
+iocontrol mypanel(myPanelName, client);
 
 void setup()
 {
@@ -69,7 +69,7 @@ const char* myVarName = "название_переменной";
 
 // Настройки клиента (клиент должен быть передан в конструктор объекта панели)
 WiFiClient client;
-mypanel iocontrol(myPanelName, client);
+iocontrol mypanel(myPanelName, client);
 
 void setup()
 {
