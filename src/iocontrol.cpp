@@ -97,7 +97,7 @@ int iocontrol::readUpdate()
 			String s = "{" + _client.readStringUntil('[');
 			s.concat("\"\"}");
 
-			// parse if responese was succsessful
+			// parse if response was successful
 			// get boardSize
 			bool check = false;
 			int jsonError = _parseJson(check, s, F("check"));
@@ -261,7 +261,7 @@ int iocontrol::_sendData(String& req)
 			+ req + " HTTP/1.1"
 		       );
 
-	// rest of the requset
+	// rest of the request
 	_rest();
 
 	// check for success
@@ -314,7 +314,7 @@ int iocontrol::_sendData(String& req)
 			Serial.println(_boardVars[i]._tries);
 #endif
 
-			// reset pending for write flag if updated succsessfully
+			// reset pending for write flag if updated successfully
 			if (check)
 				_boardVars[i]._pending = false;
 
@@ -345,6 +345,12 @@ long iocontrol::readInt(const String& name)
 				return _boardVars[i]._int;
 	}
 	return 0;
+}
+
+// get bool
+bool iocontrol::readBool(const String& name)
+{
+        return !!readInt(name);
 }
 
 // get float from memory
