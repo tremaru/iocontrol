@@ -16,15 +16,11 @@ enum {
 	failedJsonRoot = 602,
 	noType = 603,
 	emptyBoard = 604,
-	bigJson = 605,
 	nothingToWrite = 606,
 	invalidHeader = 701,
 	intervalError = 702,
 	invalidResponse = 703,
 	connectionFailed = 801,
-	cableNotPlugged = 903,
-	noEthHardware = 902,
-	ethConfigFail = 901,
 	invalidName = 1003
 };
 
