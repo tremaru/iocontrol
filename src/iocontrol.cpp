@@ -217,7 +217,10 @@ String iocontrol::_prepData(int& i)
 	switch (_boardVars[i].v_type) {
 
 		case is_int:
-			return String(_boardVars[i]._int);
+			if (_boardVars[i]._nosign)
+				return String((unsigned long)_boardVars[i]._int);
+			else
+				return String(_boardVars[i]._int);
 
 		case is_float:
 			return String(_boardVars[i]._float, _boardVars[i]._prec);
@@ -598,6 +601,28 @@ int iocontrol::_fillData(int& i)
 	_client.read();
 
 	return 0;
+}
+
+void iocontrol::write(const String& varName, unsigned int var)
+{
+	for (int i = 0; i < _boardSize; i++) {
+		if (_boardVars[i].name == varName
+				&& _boardVars[i].v_type == is_int) {
+			_boardVars[i]._nosign = true;
+		}
+	}
+	write(varName, long(var));
+}
+
+void iocontrol::write(const String& varName, unsigned long var)
+{
+	for (int i = 0; i < _boardSize; i++) {
+		if (_boardVars[i].name == varName
+				&& _boardVars[i].v_type == is_int) {
+			_boardVars[i]._nosign = true;
+		}
+	}
+	write(varName, long(var));
 }
 
 void iocontrol::write(const String& varName, long var)

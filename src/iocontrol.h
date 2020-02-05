@@ -35,7 +35,9 @@ class iocontrol{
 		void panelInfo();
 
 		void write(const String& varName, int var);
+		void write(const String& varName, unsigned int var);
 		void write(const String& varName, long var);
+		void write(const String& varName, unsigned long var);
 		void write(const String& varName, float var);
 		void write(const String& varName, float var, uint8_t prec);
 		void write(const String& varName, String var);
@@ -80,6 +82,7 @@ class iocontrol{
 			}
 			String name;
 			type v_type;
+			bool _nosign = false;
 			uint8_t _prec;
 			uint8_t _tries;
 			bool _pending = false;
