@@ -12,42 +12,42 @@ const char* sensor = "название_переменной_iocontrol";
 
 void setup()
 {
-        iarduino_Metro_Start();
+	iarduino_Metro_Start();
 
-        Serial.begin(115200);
+	Serial.begin(115200);
 
-        WiFi.begin(ssid, password);
+	WiFi.begin(ssid, password);
 
-        while (WiFi.status() != WL_CONNECTED) {
-              delay(500);
-              Serial.print(".");
-        }
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		Serial.print(".");
+	}
 
-        while(int status = mypanel.begin()) {
-                Serial.println(String(status));
-                delay(100);
-        }
+	while(int status = mypanel.begin()) {
+		Serial.println(String(status));
+		delay(100);
+	}
 }
 
 void loop()
 {
-        int status;
+	int status;
 
-        int light = Metro[0].read(DSL_LUX);
-        mypanel.write(sensor, light);
+	int light = Metro[0].read(DSL_LUX);
+	mypanel.write(sensor, light);
 
-        if ((status = mypanel.writeUpdate()) == OK) {
-                Serial.print("updated: ");
-                Serial.println(mypanel.readInt(sensor));
-        }
-        else if (status == WAITING)
-                Serial.println("Are we there yet?");
+	if ((status = mypanel.writeUpdate()) == OK) {
+		Serial.print("updated: ");
+		Serial.println(mypanel.readInt(sensor));
+	}
+	else if (status == WAITING)
+		Serial.println("Are we there yet?");
 
-        else if (status == NO_CHANGE)
-                Serial.println("nothing to write");
+	else if (status == NO_CHANGE)
+		Serial.println("nothing to write");
 
-        else
-                Serial.println(String(status));
+	else
+		Serial.println(String(status));
 
-        delay(1000);
+	delay(1000);
 }
