@@ -90,7 +90,7 @@ class iocontrol{
 			union {
 				long _int;
 				float _float;
-                                char* _string;
+				char* _string;
 			};
 		};
 
