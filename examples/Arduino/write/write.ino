@@ -44,7 +44,7 @@ void loop()
 	int status = mypanel.writeUpdate();
 
 	// Если статус равен константе OK...
-	if (status = OK) {
+	if (status == OK) {
 
 		Serial.println("Updated");
 	}

@@ -32,7 +32,7 @@ void loop()
 	int status = mypanel.readUpdate();
 
 	// Если статус равен константе OK...
-	if (status = OK) {
+	if (status == OK) {
 
 		// Записываем строку в объект
 		String myString = mypanel.readString(myVarName);

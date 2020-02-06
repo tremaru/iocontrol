@@ -32,7 +32,7 @@ void loop()
 	int status = mypanel.readUpdate();
 
 	// Если статус равен константе OK...
-	if (status = OK) {
+	if (status == OK) {
 		// Выводим значение в монитор последовательного порта
 		Serial.println(mypanel.readInt(myint));
 	}
@@ -73,7 +73,7 @@ void loop()
 	int status = mypanel.readUpdate();
 
 	// Если статус равен константе OK...
-	if (status = OK) {
+	if (status == OK) {
 		// Записываем значение в переменную
 		float myFloat = mypanel.readFloat(myPanelVar);
 		// Выводим значение в монитор последовательного порта

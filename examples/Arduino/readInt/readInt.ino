@@ -34,7 +34,7 @@ void loop()
 	int status = mypanel.readUpdate();
 
 	// Если статус равен константе OK...
-	if (status = OK) {
+	if (status == OK) {
 		// Записываем значение в переменную
 		int myInt = mypanel.readInt(myPanleVar);
 		// Выводим значение в монитор последовательного порта
