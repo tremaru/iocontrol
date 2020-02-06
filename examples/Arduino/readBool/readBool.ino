@@ -41,9 +41,9 @@ void loop()
 	if (status = OK) {
 
 		// Записываем значение в переменную
-		float myFloat = mypanel.readFloat(myPanelVar, prec);
+		bool myBool = mypanel.readBool(myPanelVar);
 
 		// Выводим значение в монитор последовательного порта
-		Serial.println(myFloat, prec);
+		Serial.println(myBool);
 	}
 }
