@@ -703,38 +703,38 @@ void iocontrol::_rest()
 	_client.println();
 }
 
-void iocontrol::panelInfo()
+void iocontrol::info(Stream& sp)
 {
-	Serial.print("Number of variables: ");
-	Serial.println(_boardSize);
+	sp.print("Number of variables: ");
+	sp.println(_boardSize);
 	for (int i = 0; i < _boardSize; i++) {
-		Serial.print("Name: ");
-		Serial.print(_boardVars[i].name);
-		Serial.print(", ");
-		Serial.print("type: ");
+		sp.print("Name: ");
+		sp.print(_boardVars[i].name);
+		sp.print(", ");
+		sp.print("type: ");
 
 		switch (_boardVars[i].v_type) {
 			case is_int:
-				Serial.print("int");
-				Serial.print(", ");
-				Serial.print("value: ");
-				Serial.print(_boardVars[i]._int);
+				sp.print("int");
+				sp.print(", ");
+				sp.print("value: ");
+				sp.print(_boardVars[i]._int);
 				break;
 			case is_float:
-				Serial.print("float");
-				Serial.print(", ");
-				Serial.print("value: ");
-				Serial.print(_boardVars[i]._float);
+				sp.print("float");
+				sp.print(", ");
+				sp.print("value: ");
+				sp.print(_boardVars[i]._float);
 				break;
 			case is_string:
-				Serial.print("string");
-				Serial.print(", ");
-				Serial.print("value: ");
-				Serial.print(_boardVars[i]._string);
+				sp.print("string");
+				sp.print(", ");
+				sp.print("value: ");
+				sp.print(_boardVars[i]._string);
 				break;
 			default:
 				break;
 		}
-		Serial.println();
+		sp.println();
 	}
 }

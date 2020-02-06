@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <Client.h>
+#include <Stream.h>
 
 #define OK 0
 #define HTTP_OK 200
@@ -32,7 +33,7 @@ class iocontrol{
 		String readString(const String& varName);
 		bool readBool(const String& varName);
 
-		void panelInfo();
+		void info(Stream&);
 
 		void write(const String& varName, int var);
 		void write(const String& varName, unsigned int var);
