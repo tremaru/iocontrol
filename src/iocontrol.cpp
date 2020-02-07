@@ -2,6 +2,10 @@
 
 //tabstop=8
 //#define __DEBUG__
+//TODO: make float precision automatic
+//TODO: add _client.stop() on error
+//TODO: check if return in _parseJson should be per var of stay as is
+//TODO: add nothingToRead returns
 
 // legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
