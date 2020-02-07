@@ -1,5 +1,4 @@
 #include <iocontrol.h>
-#include <SPI.h>
 #include <WiFi.h>
 
 const char* ssid = "ssid_точки_доступа_WiFi";
