@@ -4,13 +4,9 @@
 const char* ssid = "ssid_точки_доступа_WiFi";
 const char* password = "пароль_точки_доступа_WiFi";
 
-// Устанавливаем кол-во знаков после точки
-// (для правильной работы на сайте в настройках
-// переменной должно стоять такое же количество)
-const uint8_t prec = 5;
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
-// Название переменной с типом int на сайте iocontrol.ru
+// Название переменной кнопки на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса WiFiClient
@@ -21,8 +17,8 @@ iocontrol mypanel(myPanelName, client);
 
 void setup()
 {
-	Serial.begin(9600);
-	ESP8266WiFi.begin(ssid, password);
+	Serial.begin(115200);
+	WiFi.begin(ssid, password);
 
 	// Вызываем функцию первого запроса к сервису
 	mypanel.begin();
@@ -41,6 +37,6 @@ void loop()
 		bool myBool = mypanel.readBool(myVarName);
 
 		// Выводим значение в монитор последовательного порта
-		Serial.println(myBool);
+		Serial.println(myBool ? "ON" : "OFF");
 	}
 }

@@ -15,7 +15,7 @@ iocontrol mypanel(myPanelName, client);
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	WiFi.begin(ssid, password);
 
 	// Вызываем функцию первого запроса к сервису

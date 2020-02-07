@@ -2,13 +2,9 @@
 #include <SPI.h>
 #include <Ethernet.h>
 
-// Устанавливаем кол-во знаков после точки
-// (для правильной работы на сайте в настройках
-// переменной должно стоять такое же количество)
-const uint8_t prec = 5;
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
-// Название переменной с типом int на сайте iocontrol.ru
+// Название переменной кнопки на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса EthernetClient
@@ -44,6 +40,6 @@ void loop()
 		bool myBool = mypanel.readBool(myVarName);
 
 		// Выводим значение в монитор последовательного порта
-		Serial.println(myBool);
+		Serial.println(myBool ? "ON" : "OFF");
 	}
 }

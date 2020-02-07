@@ -4,7 +4,7 @@
 
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
-// Название переменной с типом int на сайте iocontrol.ru
+// Название целочисленной переменной на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса EthernetClient

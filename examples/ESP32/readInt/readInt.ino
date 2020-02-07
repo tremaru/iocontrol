@@ -6,7 +6,7 @@ const char* password = "пароль_точки_доступа_WiFi";
 
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
-// Название переменной с типом int на сайте iocontrol.ru
+// Название целочисленной переменной на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса WiFiClient
@@ -17,7 +17,7 @@ iocontrol mypanel(myPanelName, client);
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	WiFi.begin(ssid, password);
 
 	// Вызываем функцию первого запроса к сервису

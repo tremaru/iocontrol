@@ -24,8 +24,8 @@ iocontrol mypanel(myPanelName, client);
 
 void setup()
 {
-	Serial.begin(9600);
-	ESP8266WiFi.begin(ssid, password);
+	Serial.begin(115200);
+	WiFi.begin(ssid, password);
 
 	// Вызываем функцию первого запроса к сервису
 	mypanel.begin();

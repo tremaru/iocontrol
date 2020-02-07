@@ -4,7 +4,7 @@
 
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
-// Название переменной с типом int на сайте iocontrol.ru
+// Название переменной строки на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса EthernetClient
@@ -39,6 +39,6 @@ void loop()
 		// Записываем строку в объект
 		String myString = mypanel.readString(myVarName);
 		// Выводим значение в монитор последовательного порта
-		Serial.println();
+		Serial.println(myString);
 	}
 }

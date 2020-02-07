@@ -4,7 +4,7 @@
 
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
-// Название переменной с типом int на сайте iocontrol.ru
+// Название вещественной переменной с плавающей точкой на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса EthernetClient
@@ -17,6 +17,8 @@ byte mac[] = {
 	0xFE, 0xED, 0xDE, 0xAD, 0xFA, 0xCC
 };
 
+// Создаём глобальную переменную для хранения прочитанного значения
+float myFloat = 0.0;
 
 void setup()
 {
@@ -36,6 +38,7 @@ void loop()
 	// Если статус равен константе OK...
 	if (status == OK) {
 		// Выводим значение в монитор последовательного порта
-		Serial.println(mypanel.readInt(myVarName));
+                myFloat = mypanel.readFloat(myVarName);
+		Serial.println(myFloat);
 	}
 }
