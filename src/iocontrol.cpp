@@ -163,7 +163,7 @@ int iocontrol::readUpdate()
 			}
 
 			//fill structure
-			for (int i = 0; i < _boardSize, i++) {
+			for (int i = 0; i < _boardSize; i++) {
 
 				jsonError = _fillData(i);
 
