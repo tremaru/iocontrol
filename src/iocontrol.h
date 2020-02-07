@@ -33,7 +33,7 @@ class iocontrol{
 		String readString(const String& varName);
 		bool readBool(const String& varName);
 
-		void info(Stream&);
+		String info();
 
 		void write(const String& varName, int var);
 		void write(const String& varName, unsigned int var);

@@ -21,7 +21,7 @@ void setup()
 	// Вызываем функцию первого запроса к сервису
 	mypanel.begin();
 	// Выводим в монитор последовательного порта информацию о нашей панели
-	mypanel.info(Serial);
+	Serial.println(mypanel.info());
 }
 
 void loop()

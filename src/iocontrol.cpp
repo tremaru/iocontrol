@@ -703,38 +703,43 @@ void iocontrol::_rest()
 	_client.println();
 }
 
-void iocontrol::info(Stream& sp)
+String iocontrol::info()
 {
-	sp.print("Number of variables: ");
-	sp.println(_boardSize);
+	String s = "";
+	s += "Number of variables: ";
+	s += String(_boardSize);
+	s += "\n";
 	for (int i = 0; i < _boardSize; i++) {
-		sp.print("Name: ");
-		sp.print(_boardVars[i].name);
-		sp.print(", ");
-		sp.print("type: ");
+		s += "Name: ";
+		s += _boardVars[i].name;
+		s += ", ";
+		s += "type: ";
 
 		switch (_boardVars[i].v_type) {
 			case is_int:
-				sp.print("int");
-				sp.print(", ");
-				sp.print("value: ");
-				sp.print(_boardVars[i]._int);
+				s += "int";
+				s += ", ";
+				s += "value: ";
+				s += String(_boardVars[i]._int);
+				s += "\n";
 				break;
 			case is_float:
-				sp.print("float");
-				sp.print(", ");
-				sp.print("value: ");
-				sp.print(_boardVars[i]._float);
+				s += "float";
+				s += ", ";
+				s += "value: ";
+				s += String(_boardVars[i]._float);
+				s += "\n";
 				break;
 			case is_string:
-				sp.print("string");
-				sp.print(", ");
-				sp.print("value: ");
-				sp.print(_boardVars[i]._string);
+				s += "string";
+				s += ", ";
+				s += "value: ";
+				s += String(_boardVars[i]._string);
+				s += "\n";
 				break;
 			default:
 				break;
 		}
-		sp.println();
 	}
+	return s;
 }
