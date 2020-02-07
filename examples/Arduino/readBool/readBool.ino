@@ -9,7 +9,7 @@ const uint8_t prec = 5;
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
 // Название переменной с типом int на сайте iocontrol.ru
-const char* myPanelVar = "название_переменной";
+const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса EthernetClient
 EthernetClient client;
@@ -41,7 +41,7 @@ void loop()
 	if (status == OK) {
 
 		// Записываем значение в переменную
-		bool myBool = mypanel.readBool(myPanelVar);
+		bool myBool = mypanel.readBool(myVarName);
 
 		// Выводим значение в монитор последовательного порта
 		Serial.println(myBool);

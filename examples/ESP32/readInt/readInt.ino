@@ -8,7 +8,7 @@ const char* password = "пароль_точки_доступа_WiFi";
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
 // Название переменной с типом int на сайте iocontrol.ru
-const char* myPanelVar = "название_переменной";
+const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса WiFiClient
 WiFiClient client;
@@ -34,7 +34,7 @@ void loop()
 	// Если статус равен константе OK...
 	if (status == OK) {
 		// Записываем значение в переменную
-		int myInt = mypanel.readInt(myPanleVar);
+		int myInt = mypanel.readInt(myVarName);
 		// Выводим значение в монитор последовательного порта
 		Serial.println(myInt);
 	}

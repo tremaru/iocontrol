@@ -8,7 +8,7 @@ const char* password = "пароль_точки_доступа_WiFi";
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
 // Название переменной с типом int на сайте iocontrol.ru
-const char* myPanelVar = "название_переменной";
+const char* myVarName = "название_переменной";
 
 // Создаём объект клиента класса WiFiClient
 WiFiClient client;
