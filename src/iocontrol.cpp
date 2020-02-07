@@ -21,6 +21,7 @@ enum {
 	noType = 603,
 	emptyBoard = 604,
 	nothingToWrite = 606,
+        nothingToRead = 607,
 	invalidHeader = 701,
 	intervalError = 702,
 	invalidResponse = 703,
@@ -88,8 +89,10 @@ int iocontrol::readUpdate()
 			return h_status;
 		}
 
-		if (!_discardHeader())
+		if (!_discardHeader()) {
+                        _client.stop();
 			return invalidHeader;
+                }
 
 		if (_client.available()) {
 
@@ -104,6 +107,7 @@ int iocontrol::readUpdate()
 			int serverError = 0;
 
 			if (jsonError != 0) {
+                                _client.stop();
 				return jsonError;
 			}
 
@@ -113,6 +117,7 @@ int iocontrol::readUpdate()
 				if (serverError == invalidName)
 					_boardExists = false;
 
+                                _client.stop();
 				return serverError;
 			}
 
@@ -124,6 +129,7 @@ int iocontrol::readUpdate()
 			//create structure if valid board size
 
 			if (_boardSize == 0) {
+                                _client.stop();
 				return emptyBoard;
 			}
 
@@ -137,12 +143,16 @@ int iocontrol::readUpdate()
 			if (!_intervalSet) {
 				int tmp;
 				int i = 0;
-				jsonError = _parseJson(tmp, s, F("timeR"));
+
+				_parseJson(tmp, s, F("timeR"));
+
 				if (tmp > 0) {
 					_intervalR = 1000 * tmp;
 					i++;
 				}
+
 				_parseJson(tmp, s, F("timeW"));
+
 				if (tmp > 0) {
 					_intervalW = 1000 * tmp;
 					i++;
@@ -153,16 +163,15 @@ int iocontrol::readUpdate()
 			}
 
 			//fill structure
-			int i;
-			for (_currentPlace = _boardSize, i = 0;
-					_currentPlace > 0;
-					--_currentPlace, i++) {
+			for (int i = 0; i < _boardSize, i++) {
 
 				jsonError = _fillData(i);
-				if (jsonError)
-					return jsonError;
-			}
 
+				if (jsonError) {
+                                        _client.stop();
+					return jsonError;
+                                }
+			}
 		}
 		_client.stop();
 	}
@@ -269,11 +278,14 @@ int iocontrol::_sendData(String& req)
 
 	// check for success
 	if (int h_status = _httpStatus() != httpOk) {
+                _client.stop();
 		return h_status;
 	}
 
-	if (!_discardHeader())
+	if (!_discardHeader()) {
+                _client.stop();
 		return invalidHeader;
+        }
 
 	if (_client.available()) {
 
@@ -286,11 +298,14 @@ int iocontrol::_sendData(String& req)
 		int serverError = 0;
 
 
-		if (jsonError)
+		if (jsonError) {
+                        _client.stop();
 			return jsonError;
+                }
 
 		else if (!check) {
 			_parseJson(serverError, s, F("message"));
+                        _client.stop();
 			return serverError;
 		}
 
@@ -306,8 +321,11 @@ int iocontrol::_sendData(String& req)
 		// check if all vars were written successfully
 		for (int i = 0; i < _boardSize; i++) {
 			jsonError = _parseJson(check, s, String(_boardVars[i].name));
-			if (jsonError)
+
+			if (jsonError) {
+                                _client.stop();
 				return jsonError;
+                        }
 
 #ifdef __DEBUG__
 			Serial.print(jsonError);
