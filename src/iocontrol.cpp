@@ -2,10 +2,7 @@
 
 //tabstop=8
 //#define __DEBUG__
-//TODO: make float precision automatic
-//TODO: add _client.stop() on error
-//TODO: check if return in _parseJson should be per var of stay as is
-//TODO: add nothingToRead returns
+//TODO: add nothingToRead returns?
 
 // legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
@@ -402,12 +399,24 @@ String iocontrol::readString(const String& name)
 	return String(readCstring(name));
 }
 
+// get iocontrol.ru float precision
+uint8_t iocontrol::getFloatPrec(const String& varName)
+{
+	for (int i =0; i < _boardSize; i++) {
+		if (_boardVars[i].name == varName) {
+			if (_boardVars[i].v_type == is_float) {
+				return _boardVars[i]._prec;
+			}
+		}
+	}
+	return 0;
+}
 // connect to server
 bool iocontrol::_httpRequest()
 {
 	_client.stop();
 
-	if (_client.connect(_server, 80)) {
+	if (_client.connect(_server, _port)) {
 		return true;
 	}
 	else {
@@ -526,7 +535,7 @@ int iocontrol::_parseJson(long& ioInt, const String& json, const String& field)
 }
 
 // parse a float from JSON
-int iocontrol::_parseJson(float& ioFloat, const String& json, const String& field)
+int iocontrol::_parseJson(float& ioFloat, const String& json, const String& field, uint8_t& prec)
 {
 	if (json == "")
 		return emptyJson;
@@ -536,19 +545,26 @@ int iocontrol::_parseJson(float& ioFloat, const String& json, const String& fiel
 	i += field.length() + 2;
 	if (json[i] == '\"') {
 		i++;
-		j = json.indexOf("\"", i);
+		j = json.indexOf('\"', i);
 	}
 
 	if (j == -1)
-		j = json.indexOf(",", i);
+		j = json.indexOf(',', i);
 
 	if (j == -1)
-		j = json.indexOf("}", i);
+		j = json.indexOf('}', i);
 
 	if (j == -1)
 		return failedJsonRoot;
 
-	ioFloat = json.substring(i, j).toFloat();
+	String tmp = json.substring(j, i);
+	ioFloat = tmp.toFloat();
+	i = json.lastIndexOf('.');
+	i++;
+	uint8_t tmp1 = j - i;
+	if (tmp1 < 6 && tmp1 > 0) {
+		prec = tmp1;
+	}
 
 	return 0;
 }
@@ -592,7 +608,11 @@ int iocontrol::_fillData(int& i)
 
 	String type = "";
 	int jsonError = _parseJson(type, s, F("type"));
-	_parseJson(_boardVars[i].name, s, F("variable"));
+
+	if (jsonError)
+		return jsonError;
+
+	jsonError = _parseJson(_boardVars[i].name, s, F("variable"));
 
 	if (jsonError)
 		return jsonError;
@@ -605,13 +625,19 @@ int iocontrol::_fillData(int& i)
 	else if (type == F("float")) {
 
 		_boardVars[i].v_type = is_float;
-		jsonError = _parseJson(_boardVars[i]._float, s, value);
+		jsonError = _parseJson(_boardVars[i]._float, s, value, _boardVars[i]._prec);
 	}
 	else if (type == F("string")) {
 
 		_boardVars[i].v_type = is_string;
 		String tmp = "";
 		jsonError = _parseJson(tmp, s, value);
+
+		if (jsonError)
+			return jsonError;
+
+		//if (tmp == String(_boardVars[i]._string))
+			//return nothingToRead;
 
 		if (_boardVars[i]._string)
 			delete[] _boardVars[i]._string;
@@ -671,20 +697,21 @@ void iocontrol::write(const String& varName, int var)
 	write(varName, long(var));
 }
 
-void iocontrol::write(const String& varName, float var)
-{
-	write(varName, var, DEFAULT_FLOAT_PRECISION);
-}
+//void iocontrol::write(const String& varName, float var)
+//{
+//	write(varName, var, DEFAULT_FLOAT_PRECISION);
+//}
 
-void iocontrol::write(const String& varName, float var, uint8_t prec)
+void iocontrol::write(const String& varName, float var)//, uint8_t prec)
 {
 	for (int i = 0; i < _boardSize; i++) {
 		if (_boardVars[i].name == varName
 				&& _boardVars[i].v_type == is_float) {
 			if (abs(abs(_boardVars[i]._float) - abs(var))
-					> pow(10, -prec)) {
+					//> pow(10, -prec)) {
+					> pow(10, -_boardVars[i]._prec)) {
 				_boardVars[i]._float = var;
-				_boardVars[i]._prec = prec;
+				//_boardVars[i]._prec = prec;
 				_boardVars[i]._pending = true;
 			}
 		}
@@ -749,7 +776,7 @@ String iocontrol::info()
 				s += "float";
 				s += ", ";
 				s += "value: ";
-				s += String(_boardVars[i]._float);
+				s += String(_boardVars[i]._float, _boardVars[i]._prec);
 				s += "\n";
 				break;
 			case is_string:

@@ -13,6 +13,7 @@
 #define DEFAULT_WRITE_INTERVAL 3000
 #define DEFAULT_READ_INTERVAL 5000
 #define MAX_TRIES 10
+#define HTTP_PORT 80
 
 class iocontrol{
 
@@ -33,6 +34,7 @@ class iocontrol{
 		String readString(const String& varName);
 		bool readBool(const String& varName);
 
+		uint8_t getFloatPrec(const String& varName);
 		String info();
 
 		void write(const String& varName, int var);
@@ -40,7 +42,7 @@ class iocontrol{
 		void write(const String& varName, long var);
 		void write(const String& varName, unsigned long var);
 		void write(const String& varName, float var);
-		void write(const String& varName, float var, uint8_t prec);
+		//void write(const String& varName, float var, uint8_t prec);
 		void write(const String& varName, String var);
 		void write(const String& varName, bool var);
 
@@ -58,7 +60,7 @@ class iocontrol{
 		int _parseJson(bool& ioBool, const String& json, const String& field);
 		int _parseJson(int& ioInt, const String& json, const String& field);
 		int _parseJson(long& ioInt, const String& json, const String& field);
-		int _parseJson(float& ioFloat, const String& json, const String& field);
+		int _parseJson(float& ioFloat, const String& json, const String& field, uint8_t& prec);
 		int _parseJson(String& ioString, const String& json, const String& field);
 		int _httpStatus();
 		void _rest();
@@ -105,6 +107,7 @@ class iocontrol{
 
 		const char* _server = "www.iocontrol.ru";
 		const char* _key;
+		uint16_t _port = HTTP_PORT;
 
 		//Obj
 		Client& _client;

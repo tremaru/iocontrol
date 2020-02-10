@@ -5,6 +5,7 @@
 	readString	KEYWORD2
 	readCstring	KEYWORD2
 	readUpdate	KEYWORD2
+	getFloatPrec	KEYWORD2
 	writeUpdate	KEYWORD2
 	info	KEYWORD2
 	OK	LITERAL1
