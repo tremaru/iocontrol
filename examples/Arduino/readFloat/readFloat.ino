@@ -37,8 +37,14 @@ void loop()
 
 	// Если статус равен константе OK...
 	if (status == OK) {
-		// Выводим значение в монитор последовательного порта
-                myFloat = mypanel.readFloat(myVarName);
-		Serial.println(myFloat);
+		// Сохраняем значение в переменную
+		myFloat = mypanel.readFloat(myVarName);
+
+		// Получаем кол-во знаков после точки
+		uint8_t prec = mypanel.getFloatPrec(myVarName);
+
+		// Выводим значение в монитор последовательного порта,
+		// указывая кол-во знаков после точки
+		Serial.println(myFloat, prec);
 	}
 }

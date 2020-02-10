@@ -4,10 +4,6 @@
 const char* ssid = "ssid_точки_доступа_WiFi";
 const char* password = "пароль_точки_доступа_WiFi";
 
-// Устанавливаем кол-во знаков после точки
-// (для правильной работы на сайте в настройках
-// переменной должно стоять такое же количество)
-const uint8_t prec = 5;
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
 // Название вещественной переменной с плавающей точкой на сайте iocontrol.ru
@@ -38,8 +34,14 @@ void loop()
 
 	// Если статус равен константе OK...
 	if (status == OK) {
-		// Выводим значение в монитор последовательного порта
-                myFloat = mypanel.readFloat(myVarName, prec);
+		// Сохраняем значение в переменную
+		myFloat = mypanel.readFloat(myVarName);
+
+		// Получаем кол-во знаков после точки
+		uint8_t prec = mypanel.getFloatPrec(myVarName);
+
+		// Выводим значение в монитор последовательного порта,
+		// указывая кол-во знаков после точки
 		Serial.println(myFloat, prec);
 	}
 }
