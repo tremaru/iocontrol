@@ -29,7 +29,6 @@ class iocontrol{
 
 		long readInt(const String& varName);
 		float readFloat(const String& varName);
-		float readFloat(const String& varName, uint8_t prec);
 		char* readCstring(const String& varName);
 		String readString(const String& varName);
 		bool readBool(const String& varName);
