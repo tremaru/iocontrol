@@ -27,6 +27,13 @@ void setup()
 	Serial.begin(115200);
 	WiFi.begin(ssid, password);
 
+	// Ждём подключения
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		Serial.print(".");
+	}
+	Serial.println();
+
 	// Вызываем функцию первого запроса к сервису
 	mypanel.begin();
 }
