@@ -46,6 +46,17 @@ iocontrol::iocontrol(const char* boardName, const char* key, Client& client)
 	_boardName = boardName;
 }
 
+iocontrol::~iocontrol()
+{
+	for (int i = 0; i < _boardSize; i++) {
+		// hm... dunno if it's ok for unions.
+		if (_boardVars[i]._string)
+			delete[] _boardVars[i]._string;
+	}
+
+	delete[] _boardVars;
+}
+
 // calls readUpdate(), prevents further request if board don't exist
 int iocontrol::begin()
 {

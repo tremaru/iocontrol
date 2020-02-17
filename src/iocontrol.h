@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <Client.h>
-#include <Stream.h>
 
 #define OK 0
 #define HTTP_OK 200
@@ -21,6 +20,9 @@ class iocontrol{
 		// constructor
 		iocontrol(const char* boardName, Client& client);
 		iocontrol(const char* boardName, const char* key, Client& client);
+
+		// destructor
+		~iocontrol();
 
 		// funcs
 		int begin();
@@ -41,7 +43,6 @@ class iocontrol{
 		void write(const String& varName, long var);
 		void write(const String& varName, unsigned long var);
 		void write(const String& varName, float var);
-		//void write(const String& varName, float var, uint8_t prec);
 		void write(const String& varName, String var);
 		void write(const String& varName, bool var);
 
