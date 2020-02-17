@@ -803,3 +803,72 @@ String iocontrol::info()
 	}
 	return s;
 }
+
+void iocontrol::readMatrix(const String& name, uint8_t*const image)
+{
+	for (int i = 0; i < _boardSize; i++) {
+		if (_boardVars[i].name == name)
+			if (_boardVars[i].v_type == is_string) {
+				_strtoMatrix(_boardVars[i]._string, image);
+			}
+	}
+}
+
+void iocontrol::_strtoMatrix(const char* str, uint8_t*const image)
+{
+	uint8_t j = 0;
+
+	while (str[j] != '\0' || j > 16)
+		j++;
+
+	if (j == 16) {
+		char tmp[2];
+
+		for (int i = 0; i < 16; i++) {
+			uint8_t tmp_int = 0;
+			if (str[i] > 47 && str[i] < 58)
+				tmp_int = str[i] - 48;
+			else if (str[i] > 96 && str[i] < 103)
+				tmp_int = str[i] - 87;
+
+			if (!(i & 1)) {
+				tmp[0] = tmp_int * 0x10;
+			}
+			else {
+				tmp[1] = tmp_int;
+				image[i/2] = tmp[0] + tmp[1];
+			}
+		}
+	}
+}
+
+// goddamn it, i know i should add size to the parameters...
+void iocontrol::writeMatrix(const String& varName, uint8_t*const var)
+{
+	for (int i = 0; i < _boardSize; i++) {
+		if (_boardVars[i].name == varName
+				&& _boardVars[i].v_type == is_string) {
+
+			String tmp = "";
+
+			for (int i = 0; i < 8; i++) {
+				if (var[i] < 0x10)
+					tmp += "0" + String(var[i], HEX);
+				else
+					tmp += String(var[i], HEX);
+			}
+
+			if (String(_boardVars[i]._string) != tmp && tmp.length() == 16) {
+
+				if (_boardVars[i]._string)
+					delete[] _boardVars[i]._string;
+
+				_boardVars[i]._string = new char[tmp.length() + 1];
+				tmp.toCharArray(_boardVars[i]._string,
+						tmp.length() + 1);
+
+				_boardVars[i]._pending = true;
+			}
+		}
+	}
+}

@@ -34,10 +34,13 @@ class iocontrol{
 		char* readCstring(const String& varName);
 		String readString(const String& varName);
 		bool readBool(const String& varName);
+		unsigned long getTime();
+		void readMatrix(const String& varName, uint8_t*const image);
 
 		uint8_t getFloatPrec(const String& varName);
 		String info();
 
+		void writeMatrix(const String& varName, uint8_t*const matrix);
 		void write(const String& varName, int var);
 		void write(const String& varName, unsigned int var);
 		void write(const String& varName, long var);
@@ -64,6 +67,7 @@ class iocontrol{
 		int _parseJson(String& ioString, const String& json, const String& field);
 		int _httpStatus();
 		void _rest();
+		void _strtoMatrix(const char* str, uint8_t*const image);
 
 		enum type {
 			is_int,
