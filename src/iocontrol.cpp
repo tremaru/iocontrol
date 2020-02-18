@@ -614,7 +614,7 @@ int iocontrol::_parseJson(String& ioString, const String& json, const String& fi
 	return 0;
 }
 
-// fill struct _boardVars with data
+// fill _boardVars struct with data
 int iocontrol::_fillData(int& i)
 {
 
@@ -826,8 +826,8 @@ void iocontrol::_strtoMatrix(const char* str, uint8_t*const image)
 	uint8_t j = 0;
 
 	// check if data size is correct
-	// (this could violate memory, but shouldn't cuz
-	// this function is exlusively called from the function
+	// (this could violate memory, but shouldn't 'cause
+	// this function is exclusively called from the function
 	// above, that checks for a valid C string)
 	while (str[j] != '\0' || j > 16)
 		j++;
