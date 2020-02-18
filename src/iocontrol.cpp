@@ -2,7 +2,6 @@
 
 //tabstop=8
 //#define __DEBUG__
-//TODO: add nothingToRead returns?
 
 // legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
@@ -34,22 +33,24 @@ uint8_t _defaultMac[6] = {
 
 const char* _defaultKey = "0";
 
+// constructor
 iocontrol::iocontrol(const char* boardName, Client& client)
-	: _key(_defaultKey), _client(client)
+	: _boardName(boardName), _key(_defaultKey), _client(client)
 {
-	_boardName = boardName;
+	//_boardName = boardName;
 }
 
+// constructor with key
 iocontrol::iocontrol(const char* boardName, const char* key, Client& client)
-	: _key(key), _client(client)
+	: _boardName(boardName), _key(key), _client(client)
 {
-	_boardName = boardName;
+	//_boardName = boardName;
 }
 
+// destructor (just in case), no rule of zero, three, five or six six six is applied
 iocontrol::~iocontrol()
 {
 	for (int i = 0; i < _boardSize; i++) {
-		// hm... dunno if it's ok for unions.
 		if (_boardVars[i]._string)
 			delete[] _boardVars[i]._string;
 	}
@@ -186,7 +187,6 @@ int iocontrol::readUpdate()
 	else
 		return intervalError;
 
-
 	return 0;
 }
 
@@ -208,10 +208,13 @@ int iocontrol::writeUpdate()
 		String reqString = "";
 
 		for (int i = 0; i < _boardSize; i++) {
+
 			if (_boardVars[i]._pending) {
+
 				writeFlag = true;
 				reqString += _boardVars[i].name;
 				reqString += ":";
+
 				// call _prepData to convert vars to Strings
 				reqString += _prepData(i);
 				reqString += ",";
@@ -231,7 +234,7 @@ int iocontrol::writeUpdate()
 
 }
 
-// convert var to String
+// convert a _boardVars var to String to form the http request
 String iocontrol::_prepData(int& i)
 {
 	String empty = "";
@@ -297,6 +300,7 @@ int iocontrol::_sendData(String& req)
 
 	if (_client.available()) {
 
+		// JSON hocus pocus...
 		_client.find('{');
 		String s = "{" + _client.readStringUntil('{');
 		s.concat("\"\"}");
@@ -376,7 +380,7 @@ long iocontrol::readInt(const String& name)
 	return 0;
 }
 
-// get bool
+// get bool from memory
 bool iocontrol::readBool(const String& name)
 {
         return !!readInt(name);
@@ -422,6 +426,7 @@ uint8_t iocontrol::getFloatPrec(const String& varName)
 	}
 	return 0;
 }
+
 // connect to server
 bool iocontrol::_httpRequest()
 {
@@ -435,7 +440,7 @@ bool iocontrol::_httpRequest()
 	}
 }
 
-// header ends with CR LF CR LF
+// fast forward to data
 bool iocontrol::_discardHeader()
 {
 	return _client.find(headerEnd);
@@ -601,16 +606,15 @@ int iocontrol::_parseJson(String& ioString, const String& json, const String& fi
 		j = json.indexOf("}", i);
 
 	if (j == -1) {
-		//Serial.println(j);
 		return failedJsonRoot;
 	}
 
 	ioString = json.substring(i, j);
-	//Serial.println(ioString);
 
 	return 0;
 }
 
+// fill struct _boardVars with data
 int iocontrol::_fillData(int& i)
 {
 
@@ -644,11 +648,9 @@ int iocontrol::_fillData(int& i)
 		String tmp = "";
 		jsonError = _parseJson(tmp, s, value);
 
+		// early exit to prevent creating bogus data
 		if (jsonError)
 			return jsonError;
-
-		//if (tmp == String(_boardVars[i]._string))
-			//return nothingToRead;
 
 		if (_boardVars[i]._string)
 			delete[] _boardVars[i]._string;
@@ -668,6 +670,7 @@ int iocontrol::_fillData(int& i)
 	return 0;
 }
 
+// write unsigned int to the panel
 void iocontrol::write(const String& varName, unsigned int var)
 {
 	for (int i = 0; i < _boardSize; i++) {
@@ -679,6 +682,7 @@ void iocontrol::write(const String& varName, unsigned int var)
 	write(varName, long(var));
 }
 
+//write unsigned long to the panel
 void iocontrol::write(const String& varName, unsigned long var)
 {
 	for (int i = 0; i < _boardSize; i++) {
@@ -690,6 +694,7 @@ void iocontrol::write(const String& varName, unsigned long var)
 	write(varName, long(var));
 }
 
+// write long to the panel
 void iocontrol::write(const String& varName, long var)
 {
 	for (int i = 0; i < _boardSize; i++) {
@@ -703,32 +708,28 @@ void iocontrol::write(const String& varName, long var)
 	}
 }
 
+// write int to the panel
 void iocontrol::write(const String& varName, int var)
 {
 	write(varName, long(var));
 }
 
-//void iocontrol::write(const String& varName, float var)
-//{
-//	write(varName, var, DEFAULT_FLOAT_PRECISION);
-//}
-
-void iocontrol::write(const String& varName, float var)//, uint8_t prec)
+// write float to the panel
+void iocontrol::write(const String& varName, float var)
 {
 	for (int i = 0; i < _boardSize; i++) {
 		if (_boardVars[i].name == varName
 				&& _boardVars[i].v_type == is_float) {
 			if (abs(abs(_boardVars[i]._float) - abs(var))
-					//> pow(10, -prec)) {
 					> pow(10, -_boardVars[i]._prec)) {
 				_boardVars[i]._float = var;
-				//_boardVars[i]._prec = prec;
 				_boardVars[i]._pending = true;
 			}
 		}
 	}
 }
 
+// write String to the panel
 void iocontrol::write(const String& varName, String var)
 {
 	for (int i = 0; i < _boardSize; i++) {
@@ -750,11 +751,13 @@ void iocontrol::write(const String& varName, String var)
 	}
 }
 
+// write bool to the panel
 void iocontrol::write(const String& varName, bool var)
 {
 	write(varName, long(var));
 }
 
+// the rest of the http request
 void iocontrol::_rest()
 {
 	_client.println(F("Host: www.iocontrol.ru"));
@@ -763,6 +766,7 @@ void iocontrol::_rest()
 	_client.println();
 }
 
+// form the info String
 String iocontrol::info()
 {
 	String s = "";
@@ -804,30 +808,42 @@ String iocontrol::info()
 	return s;
 }
 
+// read 8x8 matrix image from the server
 void iocontrol::readMatrix(const String& name, uint8_t*const image)
 {
 	for (int i = 0; i < _boardSize; i++) {
 		if (_boardVars[i].name == name)
 			if (_boardVars[i].v_type == is_string) {
+				// spaghetti code, hooray!
 				_strtoMatrix(_boardVars[i]._string, image);
 			}
 	}
 }
 
+// convert hex string to 8 bytes
 void iocontrol::_strtoMatrix(const char* str, uint8_t*const image)
 {
 	uint8_t j = 0;
 
+	// check if data size is correct
+	// (this could violate memory, but shouldn't cuz
+	// this function is exlusively called from the function
+	// above, that checks for a valid C string)
 	while (str[j] != '\0' || j > 16)
 		j++;
 
+	// do nothing if incorrect data size
 	if (j == 16) {
-		char tmp[2];
+
+		char tmp[2]{0};
 
 		for (int i = 0; i < 16; i++) {
+
 			uint8_t tmp_int = 0;
+
 			if (str[i] > 47 && str[i] < 58)
 				tmp_int = str[i] - 48;
+
 			else if (str[i] > 96 && str[i] < 103)
 				tmp_int = str[i] - 87;
 
@@ -843,6 +859,7 @@ void iocontrol::_strtoMatrix(const char* str, uint8_t*const image)
 }
 
 // goddamn it, i know i should add size to the parameters...
+// user expected to pass 8 byte array.
 void iocontrol::writeMatrix(const String& varName, uint8_t*const var)
 {
 	for (int i = 0; i < _boardSize; i++) {
@@ -852,8 +869,10 @@ void iocontrol::writeMatrix(const String& varName, uint8_t*const var)
 			String tmp = "";
 
 			for (int i = 0; i < 8; i++) {
+
 				if (var[i] < 0x10)
 					tmp += "0" + String(var[i], HEX);
+
 				else
 					tmp += String(var[i], HEX);
 			}
