@@ -4,6 +4,8 @@
 	readFloat	KEYWORD2
 	readString	KEYWORD2
 	readCstring	KEYWORD2
+	readMatrix	KEYWORD2
+	writeMatrix	KEYWORD2
 	readUpdate	KEYWORD2
 	getFloatPrec	KEYWORD2
 	writeUpdate	KEYWORD2
