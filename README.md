@@ -9,8 +9,6 @@
 Проверено на: Arduino UNO, Arduino MEGA 2560, Piranha UNO, Piranha ULTRA, ESP32 (Metro ESP-32), ESP8266 (Wemos D1 R1).
 Для работы с Arduino требуется аппаратная возможность подключения (например, [Ethernet шилд]()) и маршрутизатор со свободным разъёмом LAN, подключённый к сети Интернет. Для ESP32 и ESP8266 требуется точка доступа WiFi с подключением к сети Интернет.
 
-This is a library that allows seamless integration of iocontrol.ru APIs to any device that uses Arduino Client base class.
-
 Пример/Example (Ethernet Shield):
 
 ``` C++
