@@ -891,3 +891,10 @@ void iocontrol::writeMatrix(const String& varName, uint8_t*const var)
 		}
 	}
 }
+
+// set amount of devices sharing the same IP to prevent going over API limits
+void iocontrol::setDeviceCountOnIP(uint8_t deviceCount)
+{
+	if (deviceCount > 0)
+		_deviceCount = deviceCount;
+}

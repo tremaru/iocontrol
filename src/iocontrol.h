@@ -49,6 +49,8 @@ class iocontrol{
 		void write(const String& varName, String var);
 		void write(const String& varName, bool var);
 
+		void setDeviceCountOnIP(uint8_t deviceCount);
+
 		//vars
 		//no public vars. Not yet...
 
@@ -112,6 +114,7 @@ class iocontrol{
 		const char* _server = "www.iocontrol.ru";
 		const char* _key;
 		uint16_t _port = HTTP_PORT;
+		uint8_t _deviceCount = 1;
 
 		//Obj
 		Client& _client;
