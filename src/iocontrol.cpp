@@ -156,14 +156,14 @@ int iocontrol::readUpdate()
 				_parseJson(tmp, s, F("timeR"));
 
 				if (tmp > 0) {
-					_intervalR = 1000 * tmp;
+					_intervalR = 1000 * tmp * _deviceCount;
 					i++;
 				}
 
 				_parseJson(tmp, s, F("timeW"));
 
 				if (tmp > 0) {
-					_intervalW = 1000 * tmp;
+					_intervalW = 1000 * tmp * _deviceCount;
 					i++;
 				}
 
