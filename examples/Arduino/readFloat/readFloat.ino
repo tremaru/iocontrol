@@ -25,12 +25,22 @@ byte mac[] = {
 	0xFE, 0xED, 0xDE, 0xAD, 0xFA, 0xCC
 };
 
+//  Задаём статический IP-адрес на тот случай,
+// если динамическое присвоение адреса даст сбой
+// IPAddress ip(192, 168, 1, 31);
+// IPAddress myDns(192, 168, 1, 1);
+
 // Создаём глобальную переменную для хранения прочитанного значения
 float myFloat = 0.0;
 
 void setup()
 {
 	Serial.begin(9600);
+
+	// Инициируем Ethernet Shield со статическим адресом
+	// Ethernet.begin(mac, ip, myDns);
+
+	// Инициируем Ethernet Shield с использованием DHCP
 	Ethernet.begin(mac);
 
 	// Вызываем функцию первого запроса к сервису

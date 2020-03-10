@@ -18,7 +18,6 @@ WiFiClient client;
 // Создаём объект iocontrol, передавая в конструктор название панели и клиента
 iocontrol mypanel(myPanelName, client);
 
-
 void setup()
 {
 	Serial.begin(115200);
