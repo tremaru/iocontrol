@@ -1,3 +1,11 @@
+/*
+ * Пример чтения челочисленной переменной с сайта iocontrol.ru
+ * на ESP8266. Необходимо заполнить название панели
+ * myPanelName и название переменной myVarName,
+ * на название переменной созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/ESP32-example-2
+ */
+
 #include <iocontrol.h>
 #include <ESP8266WiFi.h>
 

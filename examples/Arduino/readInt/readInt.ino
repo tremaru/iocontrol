@@ -1,3 +1,11 @@
+/*
+ * Пример чтения челочисленной переменной с сайта iocontrol.ru
+ * на Arduino с Ethernet Shield'ом. Необходимо заполнить название
+ * панели myPanelName и название переменной myVarName,
+ * на название переменной созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/arduino-example-2
+ */
+
 #include <iocontrol.h>
 #include <SPI.h>
 #include <Ethernet.h>

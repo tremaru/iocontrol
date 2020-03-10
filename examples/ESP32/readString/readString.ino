@@ -1,3 +1,11 @@
+/*
+ * Пример чтения текстовой переменной с сайта iocontrol.ru
+ * ESP32. Необходимо заполнить название панели
+ * myPanelName и название переменной myVarName,
+ * на название переменной созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/ESP32-example-4
+ */
+
 #include <iocontrol.h>
 #include <WiFi.h>
 

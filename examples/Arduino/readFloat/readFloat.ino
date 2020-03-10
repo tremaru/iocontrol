@@ -1,3 +1,11 @@
+/*
+ * Пример чтения вещественной переменной с сайта iocontrol.ru
+ * на Arduino с Ethernet Shield'ом. Необходимо заполнить название
+ * панели myPanelName и название переменной myVarName,
+ * созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/arduino-example-3
+ */
+
 #include <iocontrol.h>
 #include <SPI.h>
 #include <Ethernet.h>

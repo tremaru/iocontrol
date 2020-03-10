@@ -1,3 +1,10 @@
+/*
+ * Пример чтения переменной-кнопки с сайта iocontrol
+ * Необходимо заполнить название панели и название
+ * переменной, созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/ESP32-example-1
+ */
+
 #include <iocontrol.h>
 #include <WiFi.h>
 

@@ -1,3 +1,11 @@
+/*
+ * Пример записи переменных на сайт iocontrol.ru
+ * на Arduino с Ethernet Shield'ом. Необходимо заполнить название
+ * панели myPanelName и название переменных myPanel*Name,
+ * на название переменных созданных на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/arduino-example-6
+ */
+
 #include <iocontrol.h>
 #include <SPI.h>
 #include <Ethernet.h>
@@ -23,7 +31,6 @@ iocontrol mypanel(myPanelName, client);
 byte mac[] = {
 	0xFE, 0xED, 0xDE, 0xAD, 0xFA, 0xCC
 };
-
 
 void setup()
 {

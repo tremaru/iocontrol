@@ -1,3 +1,10 @@
+/*
+ *  Пример вывода информации о панели с сайта iocontrol.ru
+ * на Arduino с Ethernet Shield'ом.
+ * Это может быть Ваша панель или любая открытая панель,
+ * в постоянную myPanelName необходимо записать название панели
+ */
+
 #include <iocontrol.h>
 #include <SPI.h>
 #include <Ethernet.h>

@@ -1,3 +1,11 @@
+/*
+ * Пример чтения вещественной переменной с сайта iocontrol.ru
+ * ESP8266. Необходимо заполнить название панели
+ * myPanelName и название переменной myVarName,
+ * созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/ESP32-example-3
+ */
+
 #include <iocontrol.h>
 #include <ESP8266WiFi.h>
 

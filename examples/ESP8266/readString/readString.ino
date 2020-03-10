@@ -1,3 +1,11 @@
+/*
+ * Пример чтения текстовой переменной с сайта iocontrol.ru
+ * ESP8266. Необходимо заполнить название панели
+ * myPanelName и название переменной myVarName,
+ * на название переменной созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/arduino-example-4
+ */
+
 #include <iocontrol.h>
 #include <ESP8266WiFi.h>
 

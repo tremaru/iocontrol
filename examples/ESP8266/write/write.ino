@@ -1,3 +1,11 @@
+/*
+ * Пример записи переменных на сайт iocontrol.ru
+ * на ESP8266. Необходимо заполнить название
+ * панели myPanelName и название переменных myPanel*Name,
+ * на название переменных созданных на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/ESP32-example-6
+ */
+
 #include <iocontrol.h>
 #include <ESP8266WiFi.h>
 
