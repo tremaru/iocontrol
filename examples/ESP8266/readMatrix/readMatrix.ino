@@ -1,31 +1,37 @@
 /*
- * Пример чтения переменной-кнопки с сайта iocontrol
- * Необходимо заполнить название панели и название
- * переменной, созданной на сайте iocontrol.ru
- * Подробнее https://iocontrol.ru/blog/ESP32-example-1
+ * Пример чтения изображения монохромной матрицы 8x8 с сайта iocontrol.ru
+ * на Arduino с Ethernet Shield'ом. Необходимо заполнить название
+ * панели myPanelName и название переменной myVarName,
+ * на название переменной созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/ESP32-example-11
  */
 
 #include <iocontrol.h>
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
+#include <iarduino_I2C_Matrix_8x8.h>
 
-const char* ssid = "ssid_точки_доступа_WiFi";
-const char* password = "пароль_точки_доступа_WiFi";
+// Переменная для хранения изображения матрицы
+uint8_t image[8]{0};
 
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
-// Название переменной кнопки на сайте iocontrol.ru
+// Название переменной с типом int на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
-
 // Если панель использует ключ
 // const char* key = "ключ";
+
+const char* ssid = "ssid_точки_доступа_WiFi";
+const char* password = "пароль_точки_доступа_WiFi";
 
 // Создаём объект клиента класса WiFiClient
 WiFiClient client;
 // Создаём объект iocontrol, передавая в конструктор название панели и клиента
 iocontrol mypanel(myPanelName, client);
-
 // Если панель использует ключ
 // iocontrol mypanel(myPanelName, key, client);
+
+// Объект I2C матрицы
+iarduino_I2C_Matrix_8x8 disp;
 
 void setup()
 {
@@ -37,7 +43,12 @@ void setup()
 		delay(500);
 		Serial.print(".");
 	}
-	Serial.println();
+
+	// Инициируем матрицу 8x8
+	disp.begin();
+
+	// Выключаем все светодиоды матрицы
+	disp.clrScr();
 
 	// Вызываем функцию первого запроса к сервису
 	mypanel.begin();
@@ -51,11 +62,10 @@ void loop()
 
 	// Если статус равен константе OK...
 	if (status == OK) {
-
 		// Записываем значение в переменную
-		bool myBool = mypanel.readBool(myVarName);
+		mypanel.readMatrix(myVarName, image);
 
-		// Выводим значение в монитор последовательного порта
-		Serial.println(myBool ? "ON" : "OFF");
+		// Выводим изображение на матрицу 8x8
+		disp.drawImage(image);
 	}
 }

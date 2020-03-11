@@ -17,10 +17,16 @@ const char* myPanelName = "название_панели";
 // Название вещественной переменной с плавающей точкой на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
 
+// Если панель использует ключ
+// const char* key = "ключ";
+
 // Создаём объект клиента класса WiFiClient
 WiFiClient client;
 // Создаём объект iocontrol, передавая в конструктор название панели и клиента
 iocontrol mypanel(myPanelName, client);
+
+// Если панель использует ключ
+// iocontrol mypanel(myPanelName, key, client);
 
 // Создаём глобальную переменную для хранения прочитанного значения
 float myFloat = 0.0;

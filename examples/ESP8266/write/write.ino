@@ -24,11 +24,16 @@ int myInt = 42;
 float myFloat = 3.14;
 String myString = "myTestString";
 
+// Если панель использует ключ
+// const char* key = "ключ";
+
 // Создаём объект клиента класса WiFiClient
 WiFiClient client;
 // Создаём объект iocontrol, передавая в конструктор название панели и клиента
 iocontrol mypanel(myPanelName, client);
 
+// Если панель использует ключ
+// iocontrol mypanel(myPanelName, key, client);
 
 void setup()
 {

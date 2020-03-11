@@ -1,17 +1,22 @@
 /*
- * Пример чтения переменной-кнопки с сайта iocontrol
- * Необходимо заполнить название панели и название
- * переменной, созданной на сайте iocontrol.ru
- * Подробнее https://iocontrol.ru/blog/arduino-example-1
+ * Пример чтения изображения монохромной матрицы 8x8 с сайта iocontrol.ru
+ * на Arduino с Ethernet Shield'ом. Необходимо заполнить название
+ * панели myPanelName и название переменной myVarName,
+ * на название переменной созданной на сайте iocontrol.ru
+ * Подробнее https://iocontrol.ru/blog/arduino-example-11
  */
 
 #include <iocontrol.h>
 #include <SPI.h>
 #include <Ethernet.h>
+#include <iarduino_I2C_Matrix_8x8.h>
+
+// Переменная для хранения изображения матрицы
+uint8_t image[8]{0};
 
 // Название панели на сайте iocontrol.ru
 const char* myPanelName = "название_панели";
-// Название переменной кнопки на сайте iocontrol.ru
+// Название переменной с типом int на сайте iocontrol.ru
 const char* myVarName = "название_переменной";
 
 // Если панель использует ключ
@@ -30,21 +35,19 @@ byte mac[] = {
 	0xFE, 0xED, 0xDE, 0xAD, 0xFA, 0xCC
 };
 
-//  Задаём статический IP-адрес на тот случай,
-// если динамическое присвоение адреса даст сбой
-// IPAddress ip(192, 168, 1, 31);
-// IPAddress myDns(192, 168, 1, 1);
-
+// Объект I2C матрицы
+iarduino_I2C_Matrix_8x8 disp;
 
 void setup()
 {
 	Serial.begin(9600);
-
-	// Инициируем Ethernet Shield со статическим адресом
-	// Ethernet.begin(mac, ip, myDns);
-
-	// Инициируем Ethernet Shield с использованием DHCP
 	Ethernet.begin(mac);
+
+	// Инициируем матрицу 8x8
+	disp.begin();
+
+	// Выключаем все светодиоды матрицы
+	disp.clrScr();
 
 	// Вызываем функцию первого запроса к сервису
 	mypanel.begin();
@@ -58,11 +61,10 @@ void loop()
 
 	// Если статус равен константе OK...
 	if (status == OK) {
-
 		// Записываем значение в переменную
-		bool myBool = mypanel.readBool(myVarName);
+		mypanel.readMatrix(myVarName, image);
 
-		// Выводим значение в монитор последовательного порта
-		Serial.println(myBool ? "ON" : "OFF");
+		// Выводим изображение на матрицу 8x8
+		disp.drawImage(image);
 	}
 }
