@@ -898,3 +898,9 @@ void iocontrol::setDeviceCountOnIP(uint8_t deviceCount)
 	if (deviceCount > 0)
 		_deviceCount = deviceCount;
 }
+
+void iocontrol::setPort(uint16_t port)
+{
+	if (port > 0)
+		_port = port;
+}

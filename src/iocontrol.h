@@ -25,6 +25,7 @@ class iocontrol{
 		~iocontrol();
 
 		// funcs
+		void setPort(uint16_t port);
 		int begin();
 		int readUpdate();
 		int writeUpdate();
