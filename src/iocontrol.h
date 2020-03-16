@@ -25,7 +25,6 @@ class iocontrol{
 		~iocontrol();
 
 		// funcs
-		void setPort(uint16_t port);
 		int begin();
 		int readUpdate();
 		int writeUpdate();
@@ -51,7 +50,10 @@ class iocontrol{
 		void write(const String& varName, bool var);
 
 		void setDeviceCountOnIP(uint8_t deviceCount);
-
+		// ESP only
+//#ifdef ARDUINO_ARCH_ESP32
+		void setHttps();
+//#endif
 		//vars
 		//no public vars. Not yet...
 

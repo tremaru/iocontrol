@@ -85,9 +85,14 @@ int iocontrol::readUpdate()
 			return connectionFailed;
 		}
 
+		String ser = "";
+		if (_port == 443)
+			ser = "https://www.iocontrol.ru";
+
 		_client.println(
-				(String)"GET /api/readDataAll/"
+				(String)"GET " +ser+ "/api/readDataAll/"
 				+ _boardName + "/" + _key
+				//+ " HTTP/1.0"
 				+ " HTTP/1.1"
 			       );
 
@@ -276,11 +281,16 @@ int iocontrol::_sendData(String& req)
 #ifdef __DEBUG__
 	Serial.println(req);
 #endif
+	String ser = "";
+
+	if (_port == 443)
+		ser = "https://www.iocontrol.ru";
 
 	// request with data
 	_client.println(
-			(String)"GET /api/sendDataAll/"
+			(String)"GET " +ser+ "/api/sendDataAll/"
 			+ _boardName + "/" + _key + "/"
+			//+ req + " HTTP/1.0"
 			+ req + " HTTP/1.1"
 		       );
 
@@ -899,8 +909,9 @@ void iocontrol::setDeviceCountOnIP(uint8_t deviceCount)
 		_deviceCount = deviceCount;
 }
 
-void iocontrol::setPort(uint16_t port)
+//#ifdef ARDUINO_ARCH_ESP32
+void iocontrol::setHttps()
 {
-	if (port > 0)
-		_port = port;
+	_port = 443;
 }
+//#endif
