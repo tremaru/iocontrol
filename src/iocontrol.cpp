@@ -738,7 +738,11 @@ void iocontrol::write(const String& varName, float var)
 		}
 	}
 }
-
+// write doulbe to the panel
+void iocontrol::write(const String& varName, double var)
+{
+	write(varName, (float)var);
+}
 // write String to the panel
 void iocontrol::write(const String& varName, String var)
 {

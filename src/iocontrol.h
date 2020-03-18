@@ -46,6 +46,7 @@ class iocontrol{
 		void write(const String& varName, long var);
 		void write(const String& varName, unsigned long var);
 		void write(const String& varName, float var);
+		void write(const String& varName, double var);
 		void write(const String& varName, String var);
 		void write(const String& varName, bool var);
 
