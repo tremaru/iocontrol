@@ -69,7 +69,7 @@ int iocontrol::begin()
 	return error;
 }
 
-// read all vars from the server, creates vars (if not created),
+// reads all vars from the server, creates vars (if not created),
 // updates vars from the server. Obj.begin() runs it one time
 int iocontrol::readUpdate()
 {
