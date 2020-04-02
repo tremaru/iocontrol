@@ -58,7 +58,7 @@ iocontrol::~iocontrol()
 	delete[] _boardVars;
 }
 
-// calls readUpdate(), prevents further request if board don't exist
+// calls readUpdate(), prevents further request if board doesn't exist
 int iocontrol::begin()
 {
 	int error = readUpdate();
