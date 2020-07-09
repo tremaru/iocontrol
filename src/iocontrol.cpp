@@ -1,7 +1,7 @@
 #include "iocontrol.h"
 
 //tabstop=8
-//#define __DEBUG__
+#define __DEBUG__
 
 // legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
@@ -154,27 +154,33 @@ int iocontrol::readUpdate()
 
 			//fill intervals
 
-			if (!_intervalSet) {
+			//if (!_intervalSet) {
 				int tmp;
-				int i = 0;
+				//int i = 0;
 
 				_parseJson(tmp, s, F("mTimeR"));
 
 				if (tmp > 0) {
 					_intervalR = tmp * _deviceCount;
-					i++;
+					//i++;
 				}
 
 				_parseJson(tmp, s, F("mTimeW"));
 
 				if (tmp > 0) {
 					_intervalW = tmp * _deviceCount;
-					i++;
+					//i++;
 				}
+#ifdef __DEBUG__
+				Serial.print("current interval R: ");
+				Serial.println(_intervalR);
+				Serial.print("current interval W: ");
+				Serial.println(_intervalW);
+#endif
 
-				if (i == 2)
-					_intervalSet = true;
-			}
+				//if (i == 2)
+					//_intervalSet = true;
+			//}
 
 			//fill structure
 			for (int i = 0; i < _boardSize; i++) {

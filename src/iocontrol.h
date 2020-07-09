@@ -112,7 +112,7 @@ class iocontrol{
 		int _boardSize = 0;
 		int _currentPlace;
 		bool _created = false;
-		bool _intervalSet = false;
+		//bool _intervalSet = false;
 		bool _boardExists = true;
 
 		const char* _server = "www.iocontrol.ru";
