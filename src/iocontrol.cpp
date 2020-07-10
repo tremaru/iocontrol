@@ -1,7 +1,7 @@
 #include "iocontrol.h"
 
 //tabstop=8
-#define __DEBUG__
+//#define __DEBUG__
 
 // legal chars in request
 const char* legal = "abcdefghigklmnopqrstuvwxyz\
