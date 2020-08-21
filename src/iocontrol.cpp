@@ -1,5 +1,13 @@
 #include "iocontrol.h"
 
+// debug macro
+#ifdef ESP32
+#define PRINT(A) _debug_flag ? Serial.println(status2str(A)) : 0
+#else
+#define PRINT(A) do_nothing(A)
+int do_nothing(int) { return 0; }
+#endif
+
 //tabstop=8
 //#define __DEBUG__
 
@@ -8,6 +16,7 @@ const char* legal = "abcdefghigklmnopqrstuvwxyz\
 		     ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
 
 const String value = "value";
+String status2str(int);
 
 // errors
 enum {
@@ -74,14 +83,17 @@ int iocontrol::begin()
 int iocontrol::readUpdate()
 {
 	// forbid bombarding the server with bogus board names
-	if (!_boardExists)
+	if (!_boardExists) {
+		PRINT(invalidName);
 		return invalidName;
+	}
 
 	// check interval
 	if (millis() - currentMillisR > _intervalR || !_created) {
 		currentMillisR = millis();
 
 		if (!_httpRequest()) {
+			PRINT(connectionFailed);
 			return connectionFailed;
 		}
 
@@ -100,11 +112,13 @@ int iocontrol::readUpdate()
 
 
 		if (int h_status = _httpStatus() != httpOk) {
+			PRINT(h_status);
 			return h_status;
 		}
 
 		if (!_discardHeader()) {
                         _client.stop();
+			PRINT(invalidHeader);
 			return invalidHeader;
                 }
 
@@ -122,6 +136,7 @@ int iocontrol::readUpdate()
 
 			if (jsonError != 0) {
                                 _client.stop();
+				PRINT(jsonError);
 				return jsonError;
 			}
 
@@ -132,6 +147,7 @@ int iocontrol::readUpdate()
 					_boardExists = false;
 
                                 _client.stop();
+				PRINT(serverError);
 				return serverError;
 			}
 
@@ -144,6 +160,7 @@ int iocontrol::readUpdate()
 
 			if (_boardSize == 0) {
                                 _client.stop();
+				PRINT(emptyBoard);
 				return emptyBoard;
 			}
 
@@ -189,14 +206,17 @@ int iocontrol::readUpdate()
 
 				if (jsonError) {
                                         _client.stop();
+					PRINT(jsonError);
 					return jsonError;
                                 }
 			}
 		}
 		_client.stop();
 	}
-	else
+	else {
+		PRINT(intervalError);
 		return intervalError;
+	}
 
 	return 0;
 }
@@ -207,8 +227,10 @@ int iocontrol::writeUpdate()
 	bool writeFlag = false;
 
 	// forbid bombarding the server with bogus board names
-	if (!_boardExists)
+	if (!_boardExists) {
+		PRINT(invalidName);
 		return invalidName;
+	}
 
 	// check interval
 	if (millis() - currentMillisW > _intervalW && _created) {
@@ -236,12 +258,16 @@ int iocontrol::writeUpdate()
 		if (writeFlag)
 			return _sendData(reqString);
 
-		else
+		else {
+			PRINT(nothingToWrite);
 			return nothingToWrite;
+		}
 
 	}
-	else
+	else {
+		PRINT(intervalError);
 		return intervalError;
+	}
 
 }
 
@@ -281,6 +307,7 @@ int iocontrol::_sendData(String& req)
 {
 
 	if (!_httpRequest()) {
+		PRINT(connectionFailed);
 		return connectionFailed;
 	}
 
@@ -306,11 +333,13 @@ int iocontrol::_sendData(String& req)
 	// check for success
 	if (int h_status = _httpStatus() != httpOk) {
                 _client.stop();
+		PRINT(h_status);
 		return h_status;
 	}
 
 	if (!_discardHeader()) {
                 _client.stop();
+		PRINT(invalidHeader);
 		return invalidHeader;
         }
 
@@ -328,12 +357,14 @@ int iocontrol::_sendData(String& req)
 
 		if (jsonError) {
                         _client.stop();
+			PRINT(jsonError);
 			return jsonError;
                 }
 
 		else if (!check) {
 			_parseJson(serverError, s, F("message"));
                         _client.stop();
+			PRINT(serverError);
 			return serverError;
 		}
 
@@ -352,6 +383,7 @@ int iocontrol::_sendData(String& req)
 
 			if (jsonError) {
                                 _client.stop();
+				PRINT(jsonError);
 				return jsonError;
                         }
 
@@ -379,8 +411,10 @@ int iocontrol::_sendData(String& req)
 			}
 		}
 	}
-	else
+	else {
+		PRINT(invalidResponse);
 		return invalidResponse;
+	}
 
 	return 0;
 }
@@ -925,3 +959,39 @@ void iocontrol::setHttps()
 	_port = 443;
 }
 //#endif
+#ifdef ESP32
+void iocontrol::setDebug()
+{
+	_debug_flag = true;
+}
+
+String status2str(int status)
+{
+	switch (status) {
+		case httpOk:
+			return "OK";
+		case emptyJson:
+			return "Пустой JSON";
+		case failedJsonRoot:
+			return "Повреждённый JSON";
+		case noType:
+			return "Неизвестный тип переменной";
+		case emptyBoard:
+			return "Пустая панель";
+		case nothingToWrite:
+			return "Данные не изменились";
+		case invalidHeader:
+			return "Неверный заголовок ответа";
+		case intervalError:
+			return "Не истёк интервал ожидания";
+		case invalidResponse:
+			return "Неизвестный ответ сервера";
+		case connectionFailed:
+			return "Не удалось подключиться к серверу";
+		case invalidName:
+			return "Панель с таким именем не существует";
+		default:
+			return String(status);
+	}
+}
+#endif

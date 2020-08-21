@@ -55,6 +55,9 @@ class iocontrol{
 //#ifdef ARDUINO_ARCH_ESP32
 		void setHttps();
 //#endif
+#ifdef ESP32
+		void setDebug();
+#endif
 		//vars
 		//no public vars. Not yet...
 
@@ -119,6 +122,9 @@ class iocontrol{
 		const char* _key;
 		uint16_t _port = HTTP_PORT;
 		uint8_t _deviceCount = 1;
+#ifdef ESP32
+		bool _debug_flag = false;
+#endif
 
 		//Obj
 		Client& _client;
