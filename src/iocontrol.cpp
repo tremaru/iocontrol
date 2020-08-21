@@ -965,6 +965,11 @@ void iocontrol::setDebug()
 	_debug_flag = true;
 }
 
+void iocontrol::resetDebug()
+{
+	_debug_flag = false;
+}
+
 String status2str(int status)
 {
 	switch (status) {

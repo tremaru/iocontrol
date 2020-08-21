@@ -57,6 +57,7 @@ class iocontrol{
 //#endif
 #ifdef ESP32
 		void setDebug();
+		void resetDebug();
 #endif
 		//vars
 		//no public vars. Not yet...
