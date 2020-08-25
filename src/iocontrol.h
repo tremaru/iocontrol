@@ -56,8 +56,8 @@ class iocontrol{
 		void setHttps();
 //#endif
 #ifdef ESP32
-		void setDebug();
-		void resetDebug();
+		void enableDebug();
+		void disableDebug();
 #endif
 		//vars
 		//no public vars. Not yet...

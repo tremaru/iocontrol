@@ -960,12 +960,12 @@ void iocontrol::setHttps()
 }
 //#endif
 #ifdef ESP32
-void iocontrol::setDebug()
+void iocontrol::enableDebug()
 {
 	_debug_flag = true;
 }
 
-void iocontrol::resetDebug()
+void iocontrol::disableDebug()
 {
 	_debug_flag = false;
 }
