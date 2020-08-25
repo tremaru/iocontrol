@@ -7,6 +7,8 @@
 	readMatrix	KEYWORD2
 	writeMatrix	KEYWORD2
 	readUpdate	KEYWORD2
+	enableDebug	KEYWORD2
+	disableDebug	KEYWORD2
 	getFloatPrec	KEYWORD2
 	writeUpdate	KEYWORD2
 	info	KEYWORD2
