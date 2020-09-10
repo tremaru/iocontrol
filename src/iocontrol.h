@@ -65,6 +65,7 @@ class iocontrol{
 	private:
 
 		// funcs
+		void _checkHttpStatus(String&);
 		bool _httpRequest();
 		bool _discardHeader();
 		int _fillData(int& i);
