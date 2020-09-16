@@ -8,8 +8,6 @@
 int do_nothing(int) { return 0; }
 #endif
 
-//extern uint32_t gprsDelay;
-
 //tabstop=8
 //#define __DEBUG__
 
@@ -113,84 +111,67 @@ int iocontrol::readUpdate()
 		_rest();
 
 
-		//Serial.println("Before httpStatus!");
-
 		if (int h_status = _httpStatus() != httpOk) {
-			//Serial.println("Bang!");
 			PRINT(h_status);
 			return h_status;
 		}
 
 		if (!_discardHeader()) {
-			_client.stop();
+                        _client.stop();
 			PRINT(invalidHeader);
 			return invalidHeader;
-		}
+                }
 
-		//delayMicroseconds(100);
-		/*
-		   unsigned long M1 = micros();
-		   Serial.println("Atrer discardHeader");
-		   unsigned long M2 = micros() - M1;
-		   Serial.println(M2);
-		   */
-		unsigned long mics = micros();
+		if (_client.available()) {
 
-		while (micros() - mics < 1000UL) {
-			if (_client.available()) {
+			_client.find('{');
+			String s = "{" + _client.readStringUntil('[');
+			s.concat("\"\"}");
 
-				_client.find('{');
-				String s = "{" + _client.readStringUntil('[');
-				s.concat("\"\"}");
+			// parse if response was successful
+			// get boardSize
+			bool check = false;
+			int jsonError = _parseJson(check, s, F("check"));
+			int serverError = 0;
 
-				// parse if response was successful
-				// get boardSize
-				bool check = false;
-				int jsonError = _parseJson(check, s, F("check"));
-				int serverError = 0;
+			if (jsonError != 0) {
+                                _client.stop();
+				PRINT(jsonError);
+				return jsonError;
+			}
 
-				if (jsonError != 0) {
-					_client.stop();
-					PRINT(jsonError);
-					return jsonError;
-				}
+			else if (!check) {
+				_parseJson(serverError, s, F("message"));
 
-				else if (!check) {
-					_parseJson(serverError, s, F("message"));
+				if (serverError == invalidName)
+					_boardExists = false;
 
-					if (serverError == invalidName)
-						_boardExists = false;
+                                _client.stop();
+				PRINT(serverError);
+				return serverError;
+			}
 
-					_client.stop();
-					PRINT(serverError);
-					return serverError;
-				}
-
-				else {
-					_parseJson(
-							_boardSize, 
-							s, 
-							F("countVariable")
-						);
-				}
+			else {
+				_parseJson(_boardSize, s, F("countVariable"));
+			}
 
 
-				//create structure if valid board size
+			//create structure if valid board size
 
-				if (_boardSize == 0) {
-					_client.stop();
-					PRINT(emptyBoard);
-					return emptyBoard;
-				}
+			if (_boardSize == 0) {
+                                _client.stop();
+				PRINT(emptyBoard);
+				return emptyBoard;
+			}
 
-				else if (!_created) {
-					_boardVars = new t_item[_boardSize];
-					_created = true;
-				}
+			else if (!_created) {
+				_boardVars = new t_item[_boardSize];
+				_created = true;
+			}
 
-				//fill intervals
+			//fill intervals
 
-				//if (!_intervalSet) {
+			//if (!_intervalSet) {
 				int tmp;
 				//int i = 0;
 
@@ -215,30 +196,27 @@ int iocontrol::readUpdate()
 #endif
 
 				//if (i == 2)
-				//_intervalSet = true;
-				//}
+					//_intervalSet = true;
+			//}
 
-				//fill structure
-				for (int i = 0; i < _boardSize; i++) {
+			//fill structure
+			for (int i = 0; i < _boardSize; i++) {
 
-					jsonError = _fillData(i);
+				jsonError = _fillData(i);
 
-					if (jsonError) {
-						_client.stop();
-						PRINT(jsonError);
-						return jsonError;
-					}
-				}
+				if (jsonError) {
+                                        _client.stop();
+					PRINT(jsonError);
+					return jsonError;
+                                }
 			}
 		}
 		_client.stop();
 	}
-	/*
-	   else {
-	   PRINT(intervalError);
-	   return intervalError;
-	   }
-	   */
+	else {
+		PRINT(intervalError);
+		return intervalError;
+	}
 
 	return 0;
 }
@@ -365,11 +343,6 @@ int iocontrol::_sendData(String& req)
 		return invalidHeader;
         }
 
-	//delayMicroseconds(150);
-
-	unsigned long mics = micros();
-
-	while (micros() - mics < 1000UL) {
 	if (_client.available()) {
 
 		// JSON hocus pocus...
@@ -438,13 +411,10 @@ int iocontrol::_sendData(String& req)
 			}
 		}
 	}
-	}
-	/*
 	else {
 		PRINT(invalidResponse);
 		return invalidResponse;
 	}
-	*/
 
 	return 0;
 }
@@ -516,7 +486,6 @@ bool iocontrol::_httpRequest()
 		return true;
 	}
 	else {
-		//Serial.println("didn't connect");
 		return false;
 	}
 }
@@ -524,50 +493,17 @@ bool iocontrol::_httpRequest()
 // fast forward to data
 bool iocontrol::_discardHeader()
 {
-	//delay(3000);
-#ifdef __DEBUG__
-	unsigned long timer = millis();
-	while(millis() - timer < 5000UL) {
-	if (_client.available())
-		Serial.write(_client.read());
-	}
-#endif
 	return _client.find(headerEnd);
-}
-
-void iocontrol::_checkHttpStatus(String& status)
-{
-	if (status == "") {
-		status = _client.readStringUntil('\n');
-#ifdef __DEBUG__
-		Serial.println("rec");
-#endif
-		_checkHttpStatus(status);
-	}
 }
 
 // read first line of the response and get the request status
 int iocontrol::_httpStatus()
 {
-
 	String status = _client.readStringUntil('\n');
-
-	if (status == "") {
-		_checkHttpStatus(status);
-	}
-	
 #ifdef __DEBUG__
 	Serial.println(status);
 #endif
-	int startIndex = 0;
-
-	if ((startIndex = status.indexOf("/1.1 ")) > -1)
-		startIndex += 5;
-	else
-		return invalidHeader;
-
-	status = status.substring(startIndex, startIndex + 4);
-
+	status = status.substring(9,13);
 	return status.toInt();
 }
 
@@ -876,10 +812,10 @@ void iocontrol::write(const String& varName, bool var)
 }
 
 // the rest of the http request
-inline void iocontrol::_rest()
+void iocontrol::_rest()
 {
 	_client.println(F("Host: www.iocontrol.ru"));
-	//_client.println(F("User-Agent: arduino-ethernet"));
+	_client.println(F("User-Agent: arduino-ethernet"));
 	_client.println(F("Connection: close"));
 	_client.println();
 }
