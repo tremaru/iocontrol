@@ -496,14 +496,35 @@ bool iocontrol::_discardHeader()
 	return _client.find(headerEnd);
 }
 
+void iocontrol::_checkHttpStatus(String& status)
+{
+	if (status == "") {
+		status = _client.readStringUntil('\n');
+		_checkHttpStatus(status);
+	}
+}
+
 // read first line of the response and get the request status
 int iocontrol::_httpStatus()
 {
 	String status = _client.readStringUntil('\n');
+
+	if (status == "") {
+		_checkHttpStatus(status);
+	}
 #ifdef __DEBUG__
 	Serial.println(status);
 #endif
-	status = status.substring(9,13);
+	int startIndex = 0;
+
+	if ((startIndex = status.indexOf("/1.1 ")) > -1)
+		startIndex += 5;
+	else
+		return invalidHeader;
+
+	status = status.substring(startIndex, startIndex + 4);
+	status.trim();
+
 	return status.toInt();
 }
 
