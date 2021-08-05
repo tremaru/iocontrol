@@ -30,6 +30,7 @@ enum {
 	invalidHeader = 701,
 	intervalError = 702,
 	invalidResponse = 703,
+	invalidStatus = 704,
 	connectionFailed = 801,
 	invalidName = 1003
 };
@@ -498,6 +499,10 @@ bool iocontrol::_discardHeader()
 
 void iocontrol::_checkHttpStatus(String& status)
 {
+	static uint8_t rec_check = MAX_TRIES;
+	rec_check--;
+	if (!rec_check)
+		return;
 	if (status == "") {
 		status = _client.readStringUntil('\n');
 		_checkHttpStatus(status);
@@ -511,6 +516,8 @@ int iocontrol::_httpStatus()
 
 	if (status == "") {
 		_checkHttpStatus(status);
+		if (status == "")
+			return invalidStatus;
 	}
 #ifdef __DEBUG__
 	Serial.println(status);
