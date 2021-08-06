@@ -41,6 +41,8 @@ uint8_t _defaultMac[6] = {
 	0xFE, 0xED, 0xDE, 0xAD, 0xBE, 0xEF
 };
 
+uint8_t rec_check = MAX_TRIES;
+
 const char* _defaultKey = "0";
 
 // constructor
@@ -499,10 +501,13 @@ bool iocontrol::_discardHeader()
 
 void iocontrol::_checkHttpStatus(String& status)
 {
-	static uint8_t rec_check = MAX_TRIES;
 	rec_check--;
-	if (!rec_check)
+
+	if (!rec_check) {
+		rec_check = MAX_TRIES;
 		return;
+	}
+
 	if (status == "") {
 		status = _client.readStringUntil('\n');
 		_checkHttpStatus(status);
