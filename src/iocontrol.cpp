@@ -287,7 +287,11 @@ String iocontrol::_prepData(int& i)
 				return String(_boardVars[i]._int);
 
 		case is_float:
+#ifdef ESP32
+			return String(_boardVars[i]._float, (unsigned int)_boardVars[i]._prec);
+#else
 			return String(_boardVars[i]._float, _boardVars[i]._prec);
+#endif
 
 		case is_string:
 
@@ -878,7 +882,11 @@ String iocontrol::info()
 				s += "float";
 				s += ", ";
 				s += "value: ";
+#ifdef ESP32
+				s += String(_boardVars[i]._float, (unsigned int)_boardVars[i]._prec);
+#else
 				s += String(_boardVars[i]._float, _boardVars[i]._prec);
+#endif
 				s += "\n";
 				break;
 			case is_string:
