@@ -1,3 +1,5 @@
+// author Andy Trosin
+
 #ifndef __iocontrol_h__
 #define __iocontrol_h__
 
